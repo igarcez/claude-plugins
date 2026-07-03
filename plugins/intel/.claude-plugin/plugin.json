@@ -1,0 +1,13 @@
+{
+  "name": "intel",
+  "description": "Project intelligence layer manager — bootstrap, extend, and audit a CLAUDE.md index + intelligence/*.md topic files",
+  "version": "1.0.0",
+  "author": {
+    "name": "Ian Garcez",
+    "url": "https://github.com/igarcez"
+  },
+  "homepage": "https://github.com/igarcez/claude-plugins",
+  "repository": "https://github.com/igarcez/claude-plugins",
+  "license": "MIT",
+  "keywords": ["intelligence", "claude-md", "documentation", "conventions"]
+}

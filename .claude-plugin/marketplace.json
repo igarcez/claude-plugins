@@ -1,14 +1,20 @@
 {
-  "name": "plan-md",
-  "description": "Marketplace hosting the plan-md plugin — interview-driven, agent-executable implementation plans",
+  "name": "igarcez",
+  "description": "Ian Garcez's Claude Code plugins — planning, intelligence-layer tooling, and more",
   "owner": {
-    "name": "Ian Garcez"
+    "name": "Ian Garcez",
+    "url": "https://github.com/igarcez"
   },
   "plugins": [
     {
       "name": "plan-md",
-      "source": "./",
+      "source": "./plugins/plan-md",
       "description": "Interview-driven implementation plans written for AI coding agents — create, list, review, execute"
+    },
+    {
+      "name": "intel",
+      "source": "./plugins/intel",
+      "description": "Project intelligence layer manager — bootstrap, extend, and audit a CLAUDE.md index + intelligence/*.md topic files"
     }
   ]
 }
