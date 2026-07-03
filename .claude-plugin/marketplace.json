@@ -1,0 +1,14 @@
+{
+  "name": "plan-md",
+  "description": "Marketplace hosting the plan-md plugin — interview-driven, agent-executable implementation plans",
+  "owner": {
+    "name": "Ian Garcez"
+  },
+  "plugins": [
+    {
+      "name": "plan-md",
+      "source": "./",
+      "description": "Interview-driven implementation plans written for AI coding agents — create, list, review, execute"
+    }
+  ]
+}
