@@ -1,19 +1,5 @@
 #!/usr/bin/env bash
-# intel-haiku.sh — UserPromptSubmit hook (shipped by the intel plugin).
-#
-# Injects the CLAUDE.md index every prompt, and additionally asks a headless Claude Code
-# subagent (`claude -p --model haiku`, subscription auth — NO API key) which
-# intelligence/*.md files are relevant to THIS prompt, resolving plan references
-# (plan-md ids: 3-char lowercase alphanumeric handles like "a3f", plus legacy numeric
-# ids like "11" -> plans/011-*.plan.md) and feeding their contents as evidence, then
-# injects the selected files in full.
-#
-# Pure command hook (no agent/tools): runs in a normal shell, never blocks, fires once
-# per prompt before the model reads it, and falls back to index-only on ANY failure.
-# No-ops instantly in projects without a CLAUDE.md at the cwd root.
-# Recursion: the child `claude -p` re-fires this same hook; the CLAUDE_INTEL_SELECTOR
-# sentinel makes that child exit immediately, so no grandchildren are spawned.
-# Portable: macOS (bash 3.2 / BSD) + Linux. Needs jq + the claude CLI.
+# intel-haiku.sh — intel plugin's UserPromptSubmit hook. See intelligence/hooks.md.
 
 case "${CLAUDE_INTEL_SELECTOR:-}" in 1) exit 0 ;; esac
 
@@ -34,9 +20,7 @@ emit() { jq -n --arg c "$1" '{hookSpecificOutput:{hookEventName:"UserPromptSubmi
 
 if ! command -v claude >/dev/null 2>&1 || [ -z "$prompt" ]; then emit "$ctx"; exit 0; fi
 
-# Resolve plan references in the prompt as evidence. Candidate handles: any 3-char
-# lowercase-alphanumeric word (plan-md ids, e.g. "a3f", "011"), plus unpadded legacy
-# numerics ("11" -> "011"). A candidate counts only if plans/<id>-*.plan.md exists.
+# Resolve plan references in the prompt as evidence (see intelligence/hooks.md).
 evidence=""
 seen_plan=" "
 cands="$(printf '%s' "$prompt" | tr '[:upper:]' '[:lower:]' | grep -owE '[a-z0-9]{3}' | head -n 8)
@@ -50,10 +34,7 @@ for tok in $cands; do
   done
 done
 
-# Expand hubs: any intelligence/**/*.md whose body has an "## Index" section is a hub —
-# an index over sub-files in its sibling folder, nested to any depth. CLAUDE.md only lists
-# top-level files, so append each hub's body to the selector input; that lets Haiku select
-# nested leaf paths directly (and chain hub -> sub-hub -> leaf in one pass).
+# Expand hubs so nested sub-files can be selected directly (see intelligence/hooks.md).
 hubs=""
 if [ -d "$cwd/intelligence" ]; then
   while IFS= read -r hubfile; do
@@ -84,7 +65,7 @@ ${evidence:-none}
 
 Output the relevant intelligence/*.md paths now, one per line:"
 
-# macOS ships no `timeout` by default — degrade to an unbounded call rather than failing.
+# macOS lacks `timeout`; degrade to an unbounded call (see intelligence/hooks.md).
 if command -v timeout >/dev/null 2>&1; then timeout_cmd="timeout 60"; else timeout_cmd=""; fi
 selected="$(CLAUDE_INTEL_SELECTOR=1 CLAUDE_CODE_DISABLE_BUNDLED_SKILLS=1 $timeout_cmd claude -p --model claude-haiku-4-5-20251001 "$selector_prompt" 2>/dev/null)"
 
