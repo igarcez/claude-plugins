@@ -37,6 +37,18 @@ Top level: `name`, `description`, `owner` (`{name, url}`), `plugins` (array). Ea
 Fields used by both current plugins: `name`, `description`, `version` (semver, e.g. `1.0.0`),
 `author` (`{name, url}`), `homepage`, `repository`, `license`, `keywords` (array).
 
+## Versioning
+
+Bump the `version` in `plugins/<name>/.claude-plugin/plugin.json` on **every** change to that plugin.
+Versions are per-plugin and independent; only `plugin.json` carries a version — `marketplace.json`
+does not. Follow semver:
+
+| Change | Bump | Example |
+|--------|------|---------|
+| Breaking change | major | `1.4.2` → `2.0.0` |
+| New feature | minor | `1.4.2` → `1.5.0` |
+| Fix | patch | `1.4.2` → `1.4.3` |
+
 ## Reference
 
 - `.claude-plugin/marketplace.json`, `plugins/intel/.claude-plugin/plugin.json`,

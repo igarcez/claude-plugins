@@ -9,6 +9,17 @@ Audit the intelligence layer end-to-end. Do not modify code outside the intellig
 `CLAUDE.md` unless the user explicitly approves.
 Requires the shared shapes from the `intel:shape` skill — load it first if it is not already in context.
 
+## 0. Confirm before running (token cost)
+
+`intel maintain` is **token-intensive**: it reads every `intelligence/**/*.md` file at all depths and
+the full `CLAUDE.md`, re-verifies cited paths/commands/constants against the codebase, and scans recent
+git history for coverage gaps. On a large layer this can consume a lot of context.
+
+Before any other work, warn the user and get explicit confirmation with `AskUserQuestion`:
+*"`/intel maintain` audits the entire intelligence layer and can use a lot of tokens. Run the full
+audit now?"* — options **Run full audit** and **Cancel**. On **Cancel**, stop immediately and do no
+further work. Only continue to the steps below on explicit confirmation.
+
 ## 1. Index ↔ files consistency
 
 The layer nests to **any depth**: `CLAUDE.md` indexes top-level `intelligence/<topic>.md` files, and

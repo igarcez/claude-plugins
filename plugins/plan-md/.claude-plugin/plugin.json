@@ -1,7 +1,7 @@
 {
   "name": "plan-md",
   "description": "Interview-driven implementation plans written for AI coding agents — create, list, review, execute",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Ian Garcez",
     "url": "https://github.com/igarcez"

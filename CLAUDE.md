@@ -32,7 +32,7 @@ Index of project instructions. Read referenced file when topic matches.
 
 ## Index
 
-- If adding or registering a plugin, or editing `marketplace.json` / `plugin.json` (monorepo layout, manifest shapes) → read [intelligence/plugins.md](intelligence/plugins.md)
+- If changing any plugin (manifest, command, skill, or hook), registering a new plugin, or preparing to publish (monorepo layout, manifest shapes, version bumps) → read [intelligence/plugins.md](intelligence/plugins.md)
 - If authoring or editing a slash command (`commands/*.md`, frontmatter, `$ARGUMENTS`, dispatcher routing to skills) → read [intelligence/commands.md](intelligence/commands.md)
 - If authoring or editing a skill (`skills/<name>/SKILL.md`, frontmatter, internal-skill convention, `plugin:skill` naming) → read [intelligence/skills.md](intelligence/skills.md)
 - If authoring or editing a hook (`hooks/hooks.json`, hook shell scripts, `${CLAUDE_PLUGIN_ROOT}`, portability, fail-safe/recursion) → read [intelligence/hooks.md](intelligence/hooks.md)
