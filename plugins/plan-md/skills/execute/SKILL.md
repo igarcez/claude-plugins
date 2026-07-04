@@ -27,7 +27,11 @@ Once the target plan is identified:
    - **`clear`** — 5+ prior turns or 4+ plan steps, and the prior context is mostly planning discussion with no code the executor needs.
    - **`compact`** — 5+ prior turns or 4+ plan steps, and there are prior code reads or file edits the executor may still need.
 
-   For `clear` or `compact`, output the recommendation as that single word — no token estimates, no justification, no surrounding prose — and wait for the user's answer. If they clear or compact, remind them to re-run `/plan-md execute <name>` afterward. If they decline, continue immediately.
+   For `clear` or `compact`, do not output the bare recommendation word — it is too easy to miss. Instead surface it as a single **bold question** naming the matching slash command, then wait for the user's answer:
+   - for `clear`: **Run `/clear` first to save tokens before proceeding?**
+   - for `compact`: **Run `/compact` first to save tokens before proceeding?**
+
+   Output nothing else — no token estimates, no justification, no other surrounding prose. If they clear or compact, remind them to re-run `/plan-md execute <name>` afterward. If they decline, continue immediately.
 4. If a `CLAUDE.md` file exists in the working directory, read it and follow its guidelines throughout execution.
 5. Execute each step in the plan sequentially, implementing all the code changes described.
 6. After completing each step, update the plan file by marking the step as done (prefix the step title with a checkmark, e.g., `### Step 1: ~~title~~ Done`).
