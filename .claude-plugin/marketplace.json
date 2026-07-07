@@ -20,6 +20,11 @@
       "name": "merge",
       "source": "./plugins/merge",
       "description": "Merge a branch into the current branch, resolving conflicts intelligently — defaults to the remote default branch"
+    },
+    {
+      "name": "pr-review",
+      "source": "./plugins/pr-review",
+      "description": "AI pull-request reviews — review a GitHub PR, then plan the fixes, keep a local report, or push inline review comments (beta)"
     }
   ]
 }

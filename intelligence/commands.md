@@ -19,9 +19,9 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion, Agent, Skil
 
 ## Dispatcher pattern
 
-Both current commands are **thin dispatchers**: the body holds only shared conventions + argument
-routing; each subcommand's full instructions live in a skill loaded on demand, so only the relevant
-branch occupies context.
+Commands are either **thin dispatchers** (`intel`, `plan-md`, `pr-review`) — the body holds only shared conventions + argument routing; each subcommand's full instructions live in a skill loaded on demand, so only the relevant branch occupies context — or **single-file commands** (`merge`) that hold all instructions inline.
+
+For dispatchers:
 
 - Read the argument via the literal `"$ARGUMENTS"` placeholder in the body.
 - Dispatch on the first token; each branch does `load skill \`<plugin>:<sub>\` and follow it`.
@@ -32,4 +32,6 @@ branch occupies context.
 
 ## Reference
 
-- `plugins/intel/commands/intel.md`, `plugins/plan-md/commands/plan-md.md` — canonical dispatchers.
+- `plugins/intel/commands/intel.md`, `plugins/plan-md/commands/plan-md.md`,
+  `plugins/pr-review/commands/pr-review.md` — canonical dispatchers.
+- `plugins/merge/commands/merge.md` — canonical single-file command.
