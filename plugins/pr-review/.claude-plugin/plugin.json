@@ -1,7 +1,7 @@
 {
   "name": "pr-review",
-  "description": "AI pull-request reviews — review a GitHub PR, then plan the fixes, keep a local report, or push inline review comments (beta)",
-  "version": "0.1.0",
+  "description": "AI pull-request reviews — review a GitHub PR (or your own current branch via /self-review), then plan the fixes, keep a local report, or push inline review comments (beta)",
+  "version": "0.2.0",
   "author": {
     "name": "Ian Garcez",
     "url": "https://github.com/igarcez"

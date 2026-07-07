@@ -5,6 +5,42 @@ description: "Branch of /pr-review: validate the PR reference, fetch and review 
 
 # pr-review — review a pull request
 
+## 0. Self mode (only when loaded by `/self-review`)
+
+When this skill is loaded in **self mode**, review the current branch's own work instead of a supplied PR reference. Do sections 1 (preflight) and 4 (review) as written, but replace sections 2–3 with the target resolution below, and in section 5 skip the handling question — always load skill `pr-review:plan`.
+
+**Resolve the target (self mode):**
+
+1. Confirm GitHub + `gh` per section 1. If gh is missing/unauthenticated, or the provider is not GitHub, go straight to the **local-diff self review** below (the current branch is the source — never prompt for a source branch).
+2. Get the current branch: `git rev-parse --abbrev-ref HEAD`. If it prints `HEAD` (detached), reply *"Detached HEAD — check out a branch to self-review."* and stop.
+3. Look for an open PR for the current branch:
+
+   ```bash
+   gh pr view --json number,title,url,headRefName,baseRefName,state
+   ```
+
+   - Exits 0 with `"state": "OPEN"` → **PR-mode self review**: use its `number`, then continue exactly as section 3 (`gh pr diff <number>`) and section 4. Report filename and header follow the normal PR rules (`reviews/pr-<number>.review.md`, `**PR:**` line).
+   - Non-zero exit (no PR for the branch), or state is not `OPEN` → **local-diff self review** (below).
+
+**Local-diff self review:**
+
+1. Detect the repo default branch, first:
+
+   ```bash
+   gh repo view --json defaultBranchRef --jq .defaultBranchRef.name
+   ```
+
+   If that fails or prints nothing, fall back to:
+
+   ```bash
+   git symbolic-ref --quiet --short refs/remotes/origin/HEAD | sed 's#^origin/##'
+   ```
+
+2. If both yield no branch name, ask with `AskUserQuestion` ("Could not detect the base branch — which branch is this change based on?") for the base branch.
+3. Let `<base>` be the detected/chosen branch and `<source>` the current branch. Run `git fetch origin <base>`, then diff `git diff origin/<base>...HEAD`. If `origin/<base>` does not exist, diff `git diff <base>...HEAD` instead.
+4. If the diff is empty, reply *"No changes on `<source>` vs `<base>` — nothing to review."* and stop.
+5. Proceed to section 4 with this diff. The report filename is `reviews/<source with / replaced by ->.review.md` and the header's `**PR:**` line is replaced by `- **Diff:** <base>...<source>` (same as the git-only fallback).
+
 ## 1. Preflight: provider and tooling
 
 Detect the hosting provider: run `git remote get-url origin`. URL contains `github.com` → GitHub; contains `gitlab` → GitLab; contains `bitbucket` → Bitbucket; anything else → unknown.
@@ -58,7 +94,8 @@ Style and convention nits are out of scope — do not report them. For each find
 ## 5. Route the findings
 
 - **Zero findings:** reply *"PR #<number> is clean — no findings. Nothing to plan, report, or push."* Write no file, ask no question, stop.
-- **Findings exist:** print a numbered summary (severity, title, `file:line` each), then ask with `AskUserQuestion` ("How should the findings be handled?", single choice):
+- **Findings exist (self mode — section 0):** print the numbered summary (severity, title, `file:line` each), then skip the question below and load skill `pr-review:plan` directly.
+- **Findings exist (normal PR review):** print a numbered summary (severity, title, `file:line` each), then ask with `AskUserQuestion` ("How should the findings be handled?", single choice):
   - **Fix plan (plan-md)** → load skill `pr-review:plan` and follow it.
   - **Local report** → load skill `pr-review:report` and follow it.
   - **Report + push to PR** → load skill `pr-review:report` and follow it; afterwards tell the user: *"Review `reviews/pr-<number>.review.md` — edit or delete any finding section to change what gets pushed — then run `/pr-review push <number>`."* (Omit this option in git-only fallback mode.)

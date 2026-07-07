@@ -8,7 +8,12 @@ AI pull-request reviews for GitHub. **Beta (0.x).**
 /pr-review <pr url | number>   review a PR
 /pr-review                     pick from the open-PR list
 /pr-review push <pr>           push an edited report as inline PR comments
+/self-review                   review your own current branch → plan-md fix plan
 ```
+
+### /self-review
+
+`/self-review` reviews *your own* work-in-progress with the same engine as `/pr-review` (correctness, security, and performance; findings capped in batches of five). It takes no argument and auto-detects the target: if the current branch has an open PR it reviews that PR's diff, otherwise it reviews the local diff of the current branch against the auto-detected default base branch (`git diff origin/<base>...HEAD`). Findings always go straight into a `plan-md` fix plan — no handling-mode prompt. If the `plan-md` plugin is not installed it falls back to a local report (`reviews/…`), same as `/pr-review`'s Fix-plan mode.
 
 `/pr-review <pr>` fetches the PR via the `gh` CLI and reviews the diff for **correctness bugs**, **security issues**, and **performance** problems (style nits are out of scope). Findings carry a severity: `critical`, `major`, or `minor`. Findings are collected in batches of five — at each batch boundary the command asks whether to continue (+5, +10, custom, or stop), so a huge diff never produces an unbounded review. It then asks how to handle them:
 
