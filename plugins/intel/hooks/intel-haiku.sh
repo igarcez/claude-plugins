@@ -65,9 +65,30 @@ ${evidence:-none}
 
 Output the relevant intelligence/*.md paths now, one per line:"
 
-# macOS lacks `timeout`; degrade to an unbounded call (see intelligence/hooks.md).
-if command -v timeout >/dev/null 2>&1; then timeout_cmd="timeout 60"; else timeout_cmd=""; fi
-selected="$(CLAUDE_INTEL_SELECTOR=1 CLAUDE_CODE_DISABLE_BUNDLED_SKILLS=1 $timeout_cmd claude -p --model claude-haiku-4-5-20251001 "$selector_prompt" 2>/dev/null)"
+# Bound the selector call with a watchdog instead of `timeout` (absent on stock macOS); an over-bound
+# call is killed and the hook degrades to index-only instead of being killed whole by the harness's
+# hook timeout. --strict-mcp-config: the selector needs no tools, so skip MCP server startup.
+bound="${CLAUDE_INTEL_SELECTOR_TIMEOUT:-40}"
+sel_file="$(mktemp "${TMPDIR:-/tmp}/intel-selector.XXXXXX")" || { emit "$ctx"; exit 0; }
+CLAUDE_INTEL_SELECTOR=1 CLAUDE_CODE_DISABLE_BUNDLED_SKILLS=1 \
+  claude -p --model claude-haiku-4-5-20251001 --strict-mcp-config "$selector_prompt" \
+  >"$sel_file" 2>/dev/null &
+claude_pid=$!
+(
+  waited=0
+  while [ "$waited" -lt "$bound" ]; do
+    sleep 1
+    kill -0 "$claude_pid" 2>/dev/null || exit 0
+    waited=$((waited + 1))
+  done
+  kill "$claude_pid" 2>/dev/null
+) &
+watchdog_pid=$!
+wait "$claude_pid" 2>/dev/null
+kill "$watchdog_pid" 2>/dev/null
+wait "$watchdog_pid" 2>/dev/null
+selected="$(cat "$sel_file" 2>/dev/null)"
+rm -f "$sel_file"
 
 matched=""
 seen=" "
