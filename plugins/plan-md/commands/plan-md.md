@@ -1,6 +1,6 @@
 ---
 description: Interview-driven implementation plans for AI agents — setup, create, list, review, execute
-argument-hint: "[setup | list | review <id> | execute <id>]"
+argument-hint: "[setup | list | review [id] | execute [id]]"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion, Agent, Skill
 ---
 
@@ -26,7 +26,7 @@ This command is a dispatcher — the full instructions for each subcommand live 
 
 - `setup` → load skill `plan-md:setup` and follow its explicit-setup steps.
 - `list` → load skill `plan-md:list` and follow it.
-- `review ...` → load skill `plan-md:review` and follow it.
-- `execute ...` → load skill `plan-md:execute` and follow it.
+- `review ...` (with or without argument) → extract any plan name/id after `review` and load skill `plan-md:review` with that argument. If no argument follows, pass empty string to skill.
+- `execute ...` (with or without argument) → extract any plan name/id after `execute` and load skill `plan-md:execute` with that argument. If no argument follows, pass empty string to skill.
 - empty (no argument) → load skill `plan-md:new` and follow it to create a new plan.
-- anything else → reply: *"Unknown subcommand. Available: `/plan-md` (new plan), `/plan-md setup`, `/plan-md list`, `/plan-md review <id>`, `/plan-md execute <id>`."* — and load no skill.
+- anything else → reply: *"Unknown subcommand. Available: `/plan-md` (new plan), `/plan-md setup`, `/plan-md list`, `/plan-md review [id]`, `/plan-md execute [id]`."* — and load no skill.

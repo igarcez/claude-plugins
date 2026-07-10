@@ -7,12 +7,14 @@ description: "Branch of /plan-md: address claude: feedback comments in a plan (s
 
 Load skill `plan-md:migrate` and run the legacy DONE migration first, so completed plans are normalized into `plans/done/` before name resolution.
 
-Parse the plan name from the argument (e.g., `review add-auth-middleware`). The name may or may not include the `.plan.md` suffix — handle both; a bare 3-character id resolves per the dispatcher's id-lookup rule.
+Parse the plan name from the argument. The argument may be empty (when user types `/plan-md review` with no id), a 3-character id, or a full name. Handle all three:
+- Empty argument: Auto-select logic kicks in (see below).
+- 3-character id or full name: Resolve per the dispatcher's id-lookup rule.
 
-If no name is given after "review":
+If the argument is empty (user typed `/plan-md review` with no plan id):
 - If there is exactly one plan in `plans/`, use that one.
-- If there are multiple plans, list them and ask the user which one to review.
-- If there are no plans, tell the user.
+- If there are multiple plans in `plans/`, list them (full filename format) and ask the user which one to review via `AskUserQuestion`.
+- If there are no plans in `plans/`, tell the user "No plans found in plans/." and stop.
 
 Once the target plan is identified:
 
