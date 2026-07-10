@@ -1,0 +1,13 @@
+{
+  "name": "merge",
+  "description": "Merge a branch into the current branch, resolving conflicts intelligently — defaults to the remote default branch",
+  "version": "1.0.0",
+  "author": {
+    "name": "Ian Garcez",
+    "url": "https://github.com/igarcez"
+  },
+  "homepage": "https://github.com/igarcez/claude-plugins",
+  "repository": "https://github.com/igarcez/claude-plugins",
+  "license": "MIT",
+  "keywords": ["git", "merge", "conflicts", "workflow"]
+}

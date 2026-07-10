@@ -15,6 +15,16 @@
       "name": "intel",
       "source": "./plugins/intel",
       "description": "Project intelligence layer manager — bootstrap, extend, and audit a CLAUDE.md index + intelligence/*.md topic files"
+    },
+    {
+      "name": "merge",
+      "source": "./plugins/merge",
+      "description": "Merge a branch into the current branch, resolving conflicts intelligently — defaults to the remote default branch"
+    },
+    {
+      "name": "pr-review",
+      "source": "./plugins/pr-review",
+      "description": "AI pull-request reviews — review a GitHub PR (or your own current branch via /self-review), then plan the fixes, keep a local report, or push inline review comments (beta)"
     }
   ]
 }

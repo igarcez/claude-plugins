@@ -29,8 +29,15 @@ Installing the plugin registers the hooks — no user `settings.json` edits need
   `case "${CLAUDE_INTEL_SELECTOR:-}" in 1) exit 0 ;; esac`, invoking the child with
   `CLAUDE_INTEL_SELECTOR=1 ... claude -p ...`.
 - **Headless subagent = subscription auth.** `claude -p --model claude-haiku-4-5-20251001` runs
-  under the user's subscription — **no API key**. Also set `CLAUDE_CODE_DISABLE_BUNDLED_SKILLS=1`
-  on the child to keep it lean.
+  under the user's subscription — **no API key**. Keep the child lean: set
+  `CLAUDE_CODE_DISABLE_BUNDLED_SKILLS=1` and pass `--strict-mcp-config` (a tool-less selector never
+  needs MCP servers; skipping them cuts several seconds of startup per prompt).
+- **Bound every headless child call below the harness hook timeout.** The harness kills the whole
+  hook at its timeout (60s default; raise per command with a `"timeout"` field in `hooks.json`, in
+  seconds — the intel hook uses 120). A killed hook emits NOTHING, losing even the fallback output,
+  so the child call must die first: bound it with the watchdog pattern below and degrade instead.
+  Real numbers from `intel-haiku.sh` on a warm mac: minimal child call ≈ 3.5s, typical prompt ≈ 9s,
+  `/plan-md execute` prompt (largest selector payload) ≈ 20s — API-latency tails cross 60s.
 - **Emit the documented envelope:** print
   `{hookSpecificOutput:{hookEventName:"UserPromptSubmit",additionalContext:$c}}`, built with `jq -n`.
 
@@ -39,8 +46,11 @@ Installing the plugin registers the hooks — no user `settings.json` edits need
 Scripts must run on macOS (bash 3.2 / BSD userland) **and** Linux:
 
 - Target bash 3.2 — no bash-4 features (associative arrays, `${var,,}`). Lowercase via `tr`.
-- `timeout` is absent on stock macOS — probe and degrade to an unbounded call:
-  `if command -v timeout ...; then timeout_cmd="timeout 60"; else timeout_cmd=""; fi`.
+- `timeout` is absent on stock macOS — never rely on it. Bound long child calls with a plain-bash
+  watchdog instead (single code path on both platforms): run the child in the background writing to a
+  `mktemp` file, spawn a subshell that polls `kill -0` once per second up to the bound and then kills
+  the child, `wait` for the child, kill+reap the watchdog, read the temp file. See the selector call
+  in `intel-haiku.sh` (bound env-overridable via `CLAUDE_INTEL_SELECTOR_TIMEOUT`, default 40s).
 - Use `printf`, not `echo -e`; POSIX `grep -oE` / `case` globs over GNU-only flags.
 - Optional dependencies (`jq`, `claude`) are probed with `command -v`.
 

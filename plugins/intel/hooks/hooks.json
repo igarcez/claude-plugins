@@ -5,7 +5,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/intel-haiku.sh\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/intel-haiku.sh\"",
+            "timeout": 120
           }
         ]
       }

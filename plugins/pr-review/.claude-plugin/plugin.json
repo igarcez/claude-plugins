@@ -1,0 +1,13 @@
+{
+  "name": "pr-review",
+  "description": "AI pull-request reviews — review a GitHub PR (or your own current branch via /self-review), then plan the fixes, keep a local report, or push inline review comments (beta)",
+  "version": "0.2.0",
+  "author": {
+    "name": "Ian Garcez",
+    "url": "https://github.com/igarcez"
+  },
+  "homepage": "https://github.com/igarcez/claude-plugins",
+  "repository": "https://github.com/igarcez/claude-plugins",
+  "license": "MIT",
+  "keywords": ["github", "pull-request", "code-review", "gh", "workflow"]
+}
