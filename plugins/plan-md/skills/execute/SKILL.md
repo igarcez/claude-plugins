@@ -24,10 +24,10 @@ Once the target plan is identified:
    - Explain that these are unaddressed feedback comments — executing now would run a plan the user may still be reviewing.
    - Use `AskUserQuestion` to ask whether they meant to review first. Offer: **Review first (Recommended)** — stop, then run `/plan-md review <name>` to address the comments; and **Execute anyway** — ignore the open comments and proceed.
    - If they choose *Review first*, tell them to run `/plan-md review <name>` and stop here. If they choose *Execute anyway*, continue to the next step.
-3. **Context evaluation:** Silently assess the current conversation context (rough prior-turn count, plan step count) and pick one of three outcomes:
-   - **Continue** — fewer than 5 prior turns AND the plan has fewer than 4 steps. Do not mention context at all; proceed directly to the next step.
-   - **`clear`** — 5+ prior turns or 4+ plan steps, and the prior context is mostly planning discussion with no code the executor needs.
-   - **`compact`** — 5+ prior turns or 4+ plan steps, and there are prior code reads or file edits the executor may still need.
+3. **Context evaluation:** Silently assess how much context is *already accumulated* in the window right now — roughly the number of prior turns and whether they carry planning discussion, code reads, or file edits. `/clear` and `/compact` only help by reclaiming context that is **already** sitting in the window before a long execution; they do nothing at a cold start, and they cannot reduce the tokens the execution itself will spend. So judge by accumulated context, **never** by plan size — a many-step plan predicts *future* spend, which clearing beforehand cannot lower. Pick one of three outcomes:
+   - **Continue** — the session is at or near a cold start (roughly fewer than 5 prior turns), or the accumulated context is otherwise small. This is the common case when the user runs `/plan-md execute` directly, and it holds **regardless of how many steps the plan has**. Do not mention context at all; proceed directly to the next step.
+   - **`clear`** — there are many prior turns (roughly 5+) of mostly planning discussion or other material the executor does not need, and no code reads/edits worth keeping.
+   - **`compact`** — there are many prior turns (roughly 5+) that include code reads or file edits the executor may still need.
 
    For `clear` or `compact`, do not output the bare recommendation word — it is too easy to miss. Instead surface it as a single **bold question** naming the matching slash command, then wait for the user's answer:
    - for `clear`: **Run `/clear` first to save tokens before proceeding?**
