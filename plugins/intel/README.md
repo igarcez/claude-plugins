@@ -21,15 +21,25 @@ Add the [claude-plugins](https://github.com/igarcez/claude-plugins) marketplace,
 
 The command is a thin dispatcher: each subcommand's full instructions load on demand as a skill (`intel:setup`, `intel:add`, `intel:maintain`, plus the shared `intel:shape` reference), so only the relevant branch occupies context.
 
-## Auto-loading hook (ships with the plugin)
+## Hooks (ship with the plugin)
 
-Installing the plugin registers a `UserPromptSubmit` hook (`hooks/intel-haiku.sh`) — no settings edits needed. On every prompt in a project whose root has a `CLAUDE.md`, it:
+Installing the plugin registers both hooks below — no settings edits needed.
+
+### Auto-loading intel (`UserPromptSubmit`, `hooks/intel-haiku.sh`)
+
+On every prompt in a project whose root has a `CLAUDE.md`, it:
 
 1. Injects the `CLAUDE.md` index as context.
 2. Asks a headless Haiku subagent (`claude -p --model haiku`, subscription auth — no API key) which `intelligence/*.md` files match the prompt, feeding referenced plan files (`plans/<id>-*.plan.md`, 3-char plan-md ids or legacy numeric) as evidence. Hub files' indexes are included in the selector input, so nested sub-files (any depth) are selected and injected directly — not just the hub.
 3. Injects the selected intel files in full.
 
 Fail-safe by design: silently degrades to index-only (or to nothing) when `jq`, the `claude` CLI, or `CLAUDE.md` is absent, and a sentinel env var stops the child `claude -p` from re-firing the hook. Disable/uninstall the plugin and the hook is gone.
+
+### End-of-turn capture check (`Stop`, `hooks/intel-capture.sh`)
+
+At the end of every turn in a project that has both `CLAUDE.md` and `intelligence/`, it injects a one-line self-check: is anything this turn established worth `/intel add`, or did the turn prove an existing `intelligence/*.md` rule wrong? Claude answers with one line or stays silent — so conventions surfaced while working get captured instead of forgotten.
+
+The main model is the judge (it already holds the turn's context), so there is no extra model call and no added latency. It fires at most once per user turn, skips subagent turns, and `CLAUDE_INTEL_CAPTURE=0` disables it while leaving the auto-loading hook running.
 
 ## Key conventions it enforces
 

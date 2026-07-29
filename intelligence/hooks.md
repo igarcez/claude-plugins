@@ -18,6 +18,8 @@ Installing the plugin registers the hooks — no user `settings.json` edits need
 - Reference scripts via `${CLAUDE_PLUGIN_ROOT}` — never a hardcoded path.
 - `type: "command"` hooks run in a normal shell (no agent/tools), receive the event JSON on stdin,
   and must never block the prompt.
+- One manifest registers many events — add a sibling key per event. The intel plugin registers
+  `UserPromptSubmit` (`intel-haiku.sh`) and `Stop` (`intel-capture.sh`).
 
 ## Authoring rules (command hooks)
 
@@ -39,7 +41,14 @@ Installing the plugin registers the hooks — no user `settings.json` edits need
   Real numbers from `intel-haiku.sh` on a warm mac: minimal child call ≈ 3.5s, typical prompt ≈ 9s,
   `/plan-md execute` prompt (largest selector payload) ≈ 20s — API-latency tails cross 60s.
 - **Emit the documented envelope:** print
-  `{hookSpecificOutput:{hookEventName:"UserPromptSubmit",additionalContext:$c}}`, built with `jq -n`.
+  `{hookSpecificOutput:{hookEventName:"<event>",additionalContext:$c}}` built with `jq -n`, with
+  `hookEventName` matching the event that fired.
+- **Guard against continuation recursion (`Stop`).** `additionalContext` on a `Stop` hook
+  *continues the conversation*, so the turn it injects ends in another `Stop` and re-fires the hook.
+  Guard twice: exit when `.stop_hook_active` is `true`, and write a once-per-turn marker keyed
+  `session_id` + `prompt_id` **before** emitting, exiting when it already exists. Registered `Stop`
+  hooks are also converted to `SubagentStop`, so exit when `.agent_id` is non-empty unless
+  subagent turns are meant to fire too.
 
 ## Portability
 
@@ -66,3 +75,18 @@ On every prompt in a project whose cwd root has a `CLAUDE.md`, it:
 4. Asks headless Haiku which `intelligence/*.md` files match, then injects the selected files in full.
 
 No-ops instantly when the cwd root has no `CLAUDE.md`.
+
+## Reference: intel-capture.sh (intel plugin's Stop hook)
+
+At the end of every main-thread turn in a project whose cwd root has **both** `CLAUDE.md` and
+`intelligence/`, it injects a one-line self-check: is anything this turn established worth
+`/intel add`, or did the turn prove an existing `intelligence/*.md` rule wrong (fix or remove)?
+Claude answers in one line or stays silent.
+
+- No child model call — the main model already holds the turn's context and is the judge, so the
+  hook is instant and needs no `"timeout"` override.
+- Fires at most once per user turn: marker `${TMPDIR:-/tmp}/intel-capture-<session_id>-<prompt_id>`,
+  written before emitting, pruned after 7 days.
+- Skips subagents (`.agent_id` non-empty) and continuations (`.stop_hook_active`).
+- `CLAUDE_INTEL_CAPTURE=0` disables it without touching the auto-loading hook.
+- No-ops instantly when `jq` is missing or the cwd root has no intelligence layer.
