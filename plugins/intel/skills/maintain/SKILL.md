@@ -7,7 +7,8 @@ description: "Branch of /intel: audit the intelligence layer end-to-end (subcomm
 
 Audit the intelligence layer end-to-end. Do not modify code outside the intelligence layer and
 `CLAUDE.md` unless the user explicitly approves.
-Requires the shared shapes from the `intel:shape` skill — load it first if it is not already in context.
+Requires the shared shapes from the `intel:shape` skill and the registry from `intel:migrations` —
+load both first if they are not already in context.
 
 ## 0. Confirm before running (token cost)
 
@@ -20,31 +21,42 @@ Before any other work, warn the user and get explicit confirmation with `AskUser
 audit now?"* — options **Run full audit** and **Cancel**. On **Cancel**, stop immediately and do no
 further work. Only continue to the steps below on explicit confirmation.
 
+## 0a. Pending migrations
+
+Compute the pending set from `intel:migrations` ("How to compute the pending set" — the layer's
+ledger first, Detect only for ids missing from it). If any migration is pending, load `intel:upgrade`
+and let it apply them before auditing anything — the audit below assumes the current layout. Record
+the applied ids for the step 6 report.
+
 ## 1. Index ↔ files consistency
 
-The layer nests to **any depth**: `CLAUDE.md` indexes top-level `intelligence/<topic>.md` files, and
-any **hub** (a file whose body is a `## Index`) indexes its sub-files in the sibling folder named
-after it — recursively. Audit every level.
+The layer nests to **any depth**: `intelligence/index.md` indexes the top-level topics, and every
+**hub** (`intelligence/<path>/index.md`) indexes the files beside it in its own folder — recursively.
+Audit every level.
 
-- List every `intelligence/**/*.md` (files at all depths).
-- Classify each file, at every depth, as a **leaf** (normal content) or a **hub** (body is an
-  `## Index` of `If <sub-trigger> → read ...` bullets).
-- `CLAUDE.md` ↔ top level — report:
-  - Top-level files present but **not** indexed → propose an index bullet (ask the user for the
-    `If <trigger>` wording via `AskUserQuestion`, then add).
+- List every `intelligence/**/*.md` (files at all depths). Classify each as an **index** (any file
+  named `index.md`) or a **leaf** (everything else).
+- `intelligence/index.md` ↔ top level — report:
+  - Top-level topics present but **not** indexed (`intelligence/*.md` other than `index.md`, and
+    `intelligence/*/index.md` hubs) → propose an index bullet (ask the user for the `If <trigger>`
+    wording via `AskUserQuestion`, then add).
   - Index entries pointing to **missing** files → propose either creating the file (run the `add`
     flow scoped to that topic) or removing the index line. Ask which.
   - Duplicate index entries for the same file → consolidate.
-- Each hub ↔ its sibling folder — apply the same three checks at every depth, recursively:
-  sub-files present but absent from the hub's `## Index`; hub bullets pointing at missing sub-files;
-  duplicate sub-entries. A hub with an empty or single-entry folder is a merge candidate (step 3b),
-  at any depth.
+  - Bullets whose target is not relative to the index's own folder (e.g. a leftover
+    `(intelligence/<topic>.md)`, or `(<topic>.md)` pointing at what is now a hub) → fix the target.
+- Each hub ↔ its own folder — apply the same checks at every depth, recursively: sibling files present
+  but absent from the hub's `## Index`; hub bullets pointing at missing files; duplicate entries;
+  targets not relative to the hub. A hub whose folder holds 0–1 files besides `index.md` is a merge
+  candidate (step 3b), at any depth.
 
 ## 2. Preamble drift
 
-Compare the `# CLAUDE.md` and `## How to use this index` block against the canonical preamble in
-"Shape of `CLAUDE.md`" in `intel:shape`. If it has drifted (wording changes, missing rules), report
-the diff and offer to restore the canonical preamble. Do not silently overwrite.
+Compare the `# Project intelligence index` and `## How to use this index` block in
+`intelligence/index.md` against the canonical preamble in "Shape of `intelligence/index.md`" in
+`intel:shape`, and the `## Project intelligence` stanza in `CLAUDE.md` against "Shape of `CLAUDE.md`".
+If either has drifted (wording changes, missing rules), report the diff and offer to restore the
+canonical text. Do not silently overwrite, and never touch `CLAUDE.md` content below the stanza.
 
 ## 2a. Citation-convention presence
 
@@ -61,8 +73,9 @@ This is how the convention propagates into every project the skill maintains.
 ## 3. Per-file accuracy audit — fan out subagents
 
 Auditing every file inline floods the main context with code reads that matter only long enough to
-produce a finding. Instead, dispatch **one subagent per leaf/sub-file** (a hub's accuracy is its
-`## Index`, covered in step 1) — all in a single message so they run in parallel. Dispatch the
+produce a finding. Instead, dispatch **one subagent per leaf** (an index's accuracy is its bullets,
+covered in step 1 — never assign an `index.md`) — all in a single message so they run in parallel.
+Dispatch the
 step-5 coverage-gap agent in the same batch. Subagents cannot talk to the user: they verify, apply
 safe fixes in their own file, and report; every judgement call bubbles up through their report.
 
@@ -110,13 +123,15 @@ sub-index" in `intel:shape`) — no re-reading of the files themselves should be
   2. Move each section into `intelligence/<topic>/<sub>.md`, preserving its rules verbatim and
      re-grepping any cited code locations (never hand-count lines — see "Citing code locations"
      in `intel:shape`).
-  3. Rewrite `intelligence/<topic>.md` as a hub: optional `## Shared` core (rules every sub-topic
-     needs) + a `## Index` of the new sub-triggers.
-  4. Leave the `CLAUDE.md` bullet pointing at the hub; broaden its `If <trigger>` wording to the
+  3. Write `intelligence/<topic>/index.md`: optional `## Shared` core (rules every sub-topic needs)
+     plus a `## Index` of the new sub-triggers, targets relative to the folder (`(<sub>.md)`).
+  4. Delete the old flat `intelligence/<topic>.md`.
+  5. Retarget the parent bullet to `(<topic>/index.md)` and broaden its `If <trigger>` wording to the
      whole area if it was specific to the old flat file.
-- **Merge candidates.** Flag any hub whose folder now holds 0–1 sub-files, or whose sub-files are
-  each tiny and always read together. Propose collapsing back to a flat `intelligence/<topic>.md`
-  via `AskUserQuestion` (fold the sub-files' content back in, delete the folder).
+- **Merge candidates.** Flag any hub whose folder now holds 0–1 files besides `index.md`, or whose
+  sub-files are each tiny and always read together. Propose collapsing back via `AskUserQuestion`:
+  fold the sub-files' content into a flat `intelligence/<topic>.md`, delete the folder including its
+  `index.md`, and retarget the parent bullet back to `(<topic>.md)`.
 
 Splitting and merging are **judgement calls** — never restructure silently; confirm via
 `AskUserQuestion` first, then apply in step 4.
@@ -136,7 +151,7 @@ report. What remains for the main thread:
 
 Run as a subagent, dispatched in the same batch as the step-3 auditors. Its prompt: scan recent
 commits (`git log --since='3 months ago' --name-only`) for recurring workflow signals, compare them
-against the `CLAUDE.md` index (include the index in the prompt), and return candidate topics not
+against the `intelligence/index.md` index (include the index in the prompt), and return candidate topics not
 covered by any intelligence file (e.g. lots of changes under `infra/` with no intelligence file) —
 report-only, no writes. For each returned gap, ask the user whether to add a new intelligence file
 via `/intel add <topic>`.
@@ -148,6 +163,7 @@ Print a structured summary:
 ```
 Intelligence audit
 ==================
+Migrations:          <applied ids, or "none pending">
 Index ↔ files:       <N OK, M issues fixed, K issues raised>
 Preamble:            <ok | drifted, restored | drifted, awaiting decision>
 Citation convention: <present | added intel-citations.md>

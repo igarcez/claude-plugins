@@ -49,6 +49,31 @@ does not. Follow semver:
 | New feature | minor | `1.4.2` → `1.5.0` |
 | Fix | patch | `1.4.2` → `1.4.3` |
 
+## Plugin state on the user's machine
+
+A plugin that must remember something between runs writes the file itself — there is no plugin-state
+API. Where it goes:
+
+| Scope | Path | Use |
+|-------|------|-----|
+| Per-user | `${XDG_STATE_HOME:-$HOME/.local/state}/<plugin>/` | Ledgers, caches, cross-project state |
+| Per-project | `<repo>/.claude/<plugin>/` (gitignored when machine-local) | State the repo owns |
+| Per-session/turn | `${TMPDIR:-/tmp}/<plugin>-<session_id>-<prompt_id>` | Dedupe markers, recursion guards |
+
+Rules:
+
+- **Never write inside `${CLAUDE_PLUGIN_ROOT}`.** It is a versioned cache
+  (`~/.claude/plugins/cache/<owner>/<plugin>/<version>/`) replaced on every plugin update — state
+  written there disappears.
+- Key per-user state by the layer/repo it describes (repo root with `/` → `-`), never globally, or one
+  repo's state leaks into another.
+- `mkdir -p` first, and treat every write as optional: `|| exit 0` in a hook, never block the prompt.
+- Offer an env override for testing (`CLAUDE_INTEL_STATE_DIR` in the intel plugin).
+- Prune what accumulates — `intel-capture.sh` deletes its turn markers after 7 days.
+- Concurrent sessions race on the same file: append, or write-then-`mv`, rather than rewriting.
+
+The intel plugin's applied-migration ledger (`intel:migrations`) is the canonical example.
+
 ## Reference
 
 - `.claude-plugin/marketplace.json`, `plugins/intel/.claude-plugin/plugin.json`,

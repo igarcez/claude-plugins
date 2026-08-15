@@ -14,7 +14,7 @@
     {
       "name": "intel",
       "source": "./plugins/intel",
-      "description": "Project intelligence layer manager — bootstrap, extend, and audit a CLAUDE.md index + intelligence/*.md topic files"
+      "description": "Project intelligence layer manager — bootstrap, extend, and audit an intelligence/index.md index + intelligence/*.md topic files"
     },
     {
       "name": "merge",

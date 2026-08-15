@@ -19,8 +19,7 @@ case "$(printf '%s' "$input" | jq -r '.stop_hook_active // false')" in true) exi
 
 cwd="$(printf '%s' "$input" | jq -r '.cwd // empty')"
 [ -n "$cwd" ] || exit 0
-[ -f "$cwd/CLAUDE.md" ] || exit 0
-[ -d "$cwd/intelligence" ] || exit 0
+[ -f "$cwd/intelligence/index.md" ] || exit 0
 
 session_id="$(printf '%s' "$input" | jq -r '.session_id // empty')"
 [ -n "$session_id" ] || exit 0

@@ -24,7 +24,8 @@ Installing the plugin registers the hooks — no user `settings.json` edits need
 ## Authoring rules (command hooks)
 
 - **Fail-safe: degrade, never error.** On any missing dependency or failure, exit cleanly with
-  reduced output. `intel-haiku.sh` degrades in order: no `jq` / `cwd` / `CLAUDE.md` → `exit 0`
+  reduced output. `intel-haiku.sh` degrades in order: no `jq` / `cwd` → `exit 0` (silent); no
+  `intelligence/index.md` → legacy-layout warning if a pre-2.0 layer is detected, else `exit 0`
   (silent); no `claude` CLI or empty prompt → emit index only; selector failure → index only.
 - **Guard against recursion.** A hook that calls `claude -p` re-fires the same hook in the child.
   Set a sentinel env var on the child and exit early when present:
@@ -65,21 +66,25 @@ Scripts must run on macOS (bash 3.2 / BSD userland) **and** Linux:
 
 ## Reference: intel-haiku.sh (intel plugin's UserPromptSubmit hook)
 
-On every prompt in a project whose cwd root has a `CLAUDE.md`, it:
+On every prompt in a project whose cwd root has an `intelligence/index.md`, it:
 
-1. Injects the `CLAUDE.md` index as context.
+1. Injects the `intelligence/index.md` index as context.
 2. Resolves plan references in the prompt (plan-md ids: 3-char lowercase-alphanumeric like `a3f`;
    legacy numerics `11` → `plans/011-*.plan.md`) and feeds matched plan files as evidence.
-3. Expands hubs — any `intelligence/**/*.md` containing a `## Index` section is a hub; its body is
-   appended to the selector input so nested sub-files (any depth) can be selected directly.
+3. Expands hubs — every `intelligence/<path>/index.md` is a hub (`find -mindepth 2 -name index.md`,
+   which skips the already-injected root index); its body is appended to the selector input so nested
+   sub-files (any depth) can be selected directly.
 4. Asks headless Haiku which `intelligence/*.md` files match, then injects the selected files in full.
+   The root `intelligence/index.md` is never re-injected as a selection.
 
-No-ops instantly when the cwd root has no `CLAUDE.md`.
+When there is no `intelligence/index.md` but a pre-2.0 layer is detected (root `CLAUDE.md` with a
+`## Index` section, or `intelligence/*.md` files), it emits a single line telling the user to run
+`/intel upgrade` and loads nothing. No-ops instantly when neither is present.
 
 ## Reference: intel-capture.sh (intel plugin's Stop hook)
 
-At the end of every main-thread turn in a project whose cwd root has **both** `CLAUDE.md` and
-`intelligence/`, it injects a one-line self-check: is anything this turn established worth
+At the end of every main-thread turn in a project whose cwd root has an `intelligence/index.md`, it
+injects a one-line self-check: is anything this turn established worth
 `/intel add`, or did the turn prove an existing `intelligence/*.md` rule wrong (fix or remove)?
 Claude answers in one line or stays silent.
 
@@ -89,4 +94,4 @@ Claude answers in one line or stays silent.
   written before emitting, pruned after 7 days.
 - Skips subagents (`.agent_id` non-empty) and continuations (`.stop_hook_active`).
 - `CLAUDE_INTEL_CAPTURE=0` disables it without touching the auto-loading hook.
-- No-ops instantly when `jq` is missing or the cwd root has no intelligence layer.
+- No-ops instantly when `jq` is missing or the cwd root has no `intelligence/index.md`.

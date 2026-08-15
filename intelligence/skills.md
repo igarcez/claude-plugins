@@ -22,12 +22,16 @@ description: "<when to use it>"
   `plugins/intel/skills/add/SKILL.md`, `plugins/plan-md/skills/new/SKILL.md`.
 - **Stack / reference skills** state their activation condition on the first body lines
   (e.g. `plan-md:php` — "Apply when project contains `composer.json`, `*.php`, or `artisan`").
+- **Lockstep with the body.** When a skill's scope changes, update its frontmatter `description` and
+  any branch list in its opening lines in the same edit — both name what the skill covers, and the
+  dispatcher and the skill picker read the `description`, not the body.
 
 ## Shared-reference skill
 
-A plugin may ship a skill that other branches load first for shared definitions (`intel:shape` —
-the intelligence-file and `CLAUDE.md` shapes). Load it before any branch that writes against those
-shapes, and mark its `description` internal.
+A plugin may ship skills that other branches load first for shared definitions: `intel:shape` (the
+intelligence-file, `intelligence/index.md`, and `CLAUDE.md` shapes) and `intel:migrations` (the
+numbered layer-migration registry read by `intel:setup`, `intel:maintain`, and `intel:upgrade`). Load
+them before any branch that writes against those shapes, and mark their `description` internal.
 
 ## Reference
 

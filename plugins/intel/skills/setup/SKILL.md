@@ -10,42 +10,47 @@ Requires the shared shapes from the `intel:shape` skill — load it first if it 
 
 ## 1. Detect bootstrap state
 
+First load the registry `intel:migrations` and compute the pending set ("How to compute the pending
+set" — ledger first, Detect only for ids missing from it). If any migration is pending, load
+`intel:upgrade`, let it apply them, then re-run the state detection below against the upgraded layer.
+
 Determine which of three states the repo is in, and route accordingly:
 
 **State A — Not bootstrapped.** `intelligence/` does not exist, or exists but contains zero
 `*.md` files. → Continue with the full flow below (steps 2–8).
 
-**State B — Fully bootstrapped.** `intelligence/` exists with ≥1 `*.md` files, **and** `CLAUDE.md`
-is already in index shape (see "Index-shape check" below). → Tell the user:
-*"`intelligence/` already exists with N files and `CLAUDE.md` is in index shape. Use
-`/intel add <topic>` to add a new context or `/intel maintain` to audit existing ones."* — and
-stop.
+**State B — Fully bootstrapped.** `intelligence/index.md` exists alongside ≥1 topic file or hub,
+**and** the layer passes the index-shape check below. → Tell the user:
+*"`intelligence/` already exists with N topic files and `intelligence/index.md` is in index shape. Use
+`/intel add <topic>` to add a new context or `/intel maintain` to audit existing ones."* — and stop.
 
-**State C — Partially bootstrapped.** `intelligence/` exists with ≥1 `*.md` files, **but**
-`CLAUDE.md` is still a knowledge-dump (fails the index-shape check). → Run the migration
-flow below (step 1a) instead of the full setup. Do **not** stop; do **not** wipe existing
-intelligence files.
+**State C — Partially bootstrapped.** `intelligence/` exists with ≥1 `*.md` files, **but** the layer
+fails the index-shape check because `CLAUDE.md` still holds project guidance beyond the pointer
+stanza. → Run the migration flow below (step 1a) instead of the full setup. Do **not** stop; do
+**not** wipe existing intelligence files.
 
 ### Index-shape check
 
-`CLAUDE.md` is considered in **index shape** when **all** of these hold:
+The layer is in **index shape** when **all** of these hold:
 
-- The top-level heading is `# CLAUDE.md`.
-- A `## How to use this index` section exists with substantially the canonical wording
-  (see "Shape of `CLAUDE.md`" in `intel:shape`).
-- A `## Index` section exists whose body is a bullet list of
-  `- If <trigger> → read [intelligence/<topic>.md](intelligence/<topic>.md)` lines, and
-  nothing else.
-- No other top-level (`##`) sections contain prose rules, command tables, conventions,
-  or architecture descriptions. (Inline code fences inside the preamble are fine; standalone
-  topical sections like `## Data Fetching` or `## Testing` are not.)
+- `intelligence/index.md` exists, its top-level heading is `# Project intelligence index`, it has a
+  `## How to use this index` section with substantially the canonical wording, and a `## Index`
+  section whose body is a bullet list of `- If <trigger> → read [intelligence/<topic>.md](<topic>.md)`
+  (or `[intelligence/<topic>/index.md](<topic>/index.md)` for a hub) lines and nothing else (see
+  "Shape of `intelligence/index.md`" in `intel:shape`).
+- `CLAUDE.md` contains the canonical `## Project intelligence` stanza (see "Shape of `CLAUDE.md`" in
+  `intel:shape`) and no `## Index` or `## How to use this index` section.
+- No section of `CLAUDE.md` outside that stanza contains prose rules, command tables, conventions, or
+  architecture descriptions. Unrelated user content that is not project coding guidance is fine — it
+  stays in `CLAUDE.md` and does not fail this check.
 
 If any condition fails, treat `CLAUDE.md` as a knowledge-dump and route to State C.
 
 ## 1a. Migration flow (State C only)
 
 Goal: move any rules/commands/conventions currently living in `CLAUDE.md` into the appropriate
-`intelligence/*.md` file (existing or new), then rewrite `CLAUDE.md` to index shape. Existing
+`intelligence/*.md` file (existing or new), then write `intelligence/index.md` and reduce `CLAUDE.md`
+to the pointer stanza plus its non-intel user content. Existing
 intelligence files are the authority — extend them with anything `CLAUDE.md` has that they
 lack; do not overwrite them with the `CLAUDE.md` wording.
 
@@ -70,9 +75,9 @@ lack; do not overwrite them with the `CLAUDE.md` wording.
    section of the existing file (respect the file's section headings; create a new section
    only if no existing one fits). For `new`, `Write` a fresh `intelligence/<topic>.md`
    following the "Shape of an intelligence file" rules in `intel:shape`.
-6. **Rewrite `CLAUDE.md` to index shape** (step 6 of the full setup), with one index bullet
-   per intel file referenced by trigger (both newly-created and existing files that already
-   cover items, so the final index covers everything).
+6. **Write `intelligence/index.md` and reduce `CLAUDE.md`** (step 6 of the full setup), with one
+   index bullet per intel file referenced by trigger (both newly-created and existing files that
+   already cover items, so the final index covers everything).
 7. **Report** (step 8 of the full setup), additionally calling out: which items were
    `covered` / `extended` / `new`, which files were edited, which were created, and what
    was dropped as stale.
@@ -148,8 +153,8 @@ For each confirmed topic:
 - Follow the "Shape of an intelligence file" rules in `intel:shape`.
 - Include only verified rules. Cite exact paths and exact commands.
 - If a topic is already large and separable at setup time, author it as a sub-index from the start
-  (hub + `intelligence/<topic>/<sub>.md` files) rather than one oversized file — see "When a file
-  grows too broad" in `intel:shape`.
+  (`intelligence/<topic>/index.md` hub + `intelligence/<topic>/<sub>.md` files) rather than one
+  oversized file — see "When a file grows too broad" in `intel:shape`.
 
 ## 5a. Offer to migrate verbose comments
 
@@ -172,23 +177,33 @@ Rules:
   (e.g. `// eslint-disable-next-line`, `# type: ignore`, `# noqa`) — those are not intelligence.
 - List every comment migrated (file + line range) so the change is reviewable.
 
-## 6. Rewrite `CLAUDE.md`
+## 6. Write `intelligence/index.md` and reduce `CLAUDE.md`
 
-Replace the existing `CLAUDE.md` (back it up first as `CLAUDE.md.bak` if not in git) with the structure
-in "Shape of `CLAUDE.md`" in `intel:shape`. Generate one index bullet per intelligence file, with a
-precise `If <trigger>` clause derived from the file's scope.
+Write `intelligence/index.md` using the structure in "Shape of `intelligence/index.md`" in
+`intel:shape`. Generate one index bullet per top-level topic — a flat file targets `(<topic>.md)`, a
+hub targets `(<topic>/index.md)` — with a precise `If <trigger>` clause derived from its scope.
+
+Then rewrite `CLAUDE.md` (back it up first as `CLAUDE.md.bak` if not in git): the `# CLAUDE.md`
+heading, the canonical `## Project intelligence` stanza from "Shape of `CLAUDE.md`" in `intel:shape`,
+then every section of the old file that is not project coding guidance, verbatim and in its original
+order. Never drop user content the intelligence layer did not put there.
+
+Finally stamp the ledger: append every id in the `intel:migrations` registry as `baseline` for this
+layer (see "The applied-migration ledger"). A layer born in the current shape must never have an old
+migration applied to it later.
 
 ## 7. Handle `AGENTS.md`
 
 If `AGENTS.md` exists and its content is now fully covered by `intelligence/*.md`, replace its body with
-a single line: `See CLAUDE.md and intelligence/ for project instructions.` (keeps the file present for
+a single line: `See intelligence/index.md for project instructions.` (keeps the file present for
 tools that look for it). If it documents agent-specific things not covered, keep those parts; remove
 duplicated rules.
 
 ## 8. Report
 
 Tell the user: which topics were extracted, which rules were dropped as stale (and why), which
-intelligence files were created, and that `CLAUDE.md` has been rewritten as an index. Also report on
+intelligence files were created, that `intelligence/index.md` now holds the index, and which
+`CLAUDE.md` sections were preserved below the pointer stanza. Also report on
 verbose comments: how many were promoted into intel files, how many were migrated (with file + line
 range) vs. left as is, and how many were excluded as stale or non-intelligence. Suggest next steps:
 `/intel add <topic>` or `/intel maintain`.
