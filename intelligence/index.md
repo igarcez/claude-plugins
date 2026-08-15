@@ -21,7 +21,11 @@ Index of project instructions. Read the referenced file when its trigger matches
    wrong path, wrong command, outdated rule, contradicts the current code, typo that changes meaning —
    fix it in the file as part of the current change. Don't leave a broken instruction in place for the
    next reader to trip over.
-6. **Check the system-wide layer for local-app configs.** When the task touches configuration of
+6. **Read the machine-local layer when present.** If `intelligence/local/index.md` exists, match its
+   `If <trigger>` bullets the same way and read every matching file. It is gitignored, so its
+   absence is normal — never treat a missing local layer as an error, and never move its content
+   into a tracked file.
+7. **Check the system-wide layer for local-app configs.** When the task touches configuration of
    local apps / dotfiles under `~/.config/`, also read `~/.config/intelligence/index.md` and scan
    its own index — it carries cross-config hooks and machine-wide intel that span configs beyond
    this repo.
