@@ -66,6 +66,8 @@ To split a leaf into a hub:
 4. Delete the old flat `intelligence/<topic>.md`.
 5. Retarget the bullet that points at the topic in its parent index (`intelligence/index.md`, or the
    parent hub's `index.md`): `(<topic>.md)` becomes `(<topic>/index.md)`.
+6. Re-base every relative link carried into the new folder — see "Moving a file re-bases every
+   relative link in it" below.
 
 When to split (all three should hold — size alone is not enough):
 
@@ -78,8 +80,9 @@ When to split (all three should hold — size alone is not enough):
 There is no depth limit — split whenever the three criteria hold, at whatever level the over-broad
 file lives; each extra hop must pay for itself in narrower context for the typical reader. The
 reverse applies at every level too: if a hub decays to a single sub-file, collapse it back — fold the
-sub-files into a flat `intelligence/<topic>.md`, delete the folder (its `index.md` included), and
-retarget the parent bullet from `(<topic>/index.md)` back to `(<topic>.md)`.
+sub-files into a flat `intelligence/<topic>.md`, delete the folder (its `index.md` included),
+retarget the parent bullet from `(<topic>/index.md)` back to `(<topic>.md)`, and re-base the folded-in
+relative links for their new, shallower home.
 
 The parent index keeps **one line per area** either way: its `If <trigger>` stays broad and only the
 target changes when a topic becomes (or stops being) a hub. The second hop (hub → sub-file) delivers
@@ -97,6 +100,23 @@ repo-relative path and its **link target** is relative to the file that holds th
 | `intelligence/api/index.md` | sub-file | `- If <sub-trigger> → read [intelligence/api/rest.md](rest.md)` |
 | `intelligence/api/index.md` | nested hub | `- If <sub-trigger> → read [intelligence/api/graphql/index.md](graphql/index.md)` |
 | `intelligence/api/graphql/index.md` | deeper sub-file | `- If <sub-trigger> → read [intelligence/api/graphql/schema.md](schema.md)` |
+
+## Moving a file re-bases every relative link in it
+
+A relative link resolves from the folder of the file that **holds** it, so moving a file to a
+different depth silently repoints every relative link in its body — `## Index` bullets, `## Shared`
+prose, `## Reference` lists, inline links, all of them. Whenever a split, merge, or migration moves a
+file, rewrite them all in the same edit:
+
+- **One level deeper** (`intelligence/<topic>.md` → `intelligence/<topic>/index.md`): a target that
+  starts with `<topic>/` loses that prefix (`(<topic>/rest.md)` → `(rest.md)`); **every other**
+  relative target gains `../` (`(code-guidelines.md)` → `(../code-guidelines.md)`).
+- **One level shallower** (`intelligence/<topic>/index.md` → `intelligence/<topic>.md`): a leading
+  `../` is dropped; a bare sibling target gains the `<topic>/` prefix.
+- Leave absolute URLs, repo-root paths, and bare `#anchor` links alone.
+
+Then confirm: every relative target in the moved file resolves to a file that exists. Label text is
+repo-relative and never changes — only the target in parentheses moves.
 
 ## Citing code locations
 

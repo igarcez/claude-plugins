@@ -119,12 +119,18 @@ children have their final names. For each match `intelligence/<path>.md`:
 
 1. Move the file to `intelligence/<path>/index.md` — `git mv` when the file is tracked
    (`git ls-files --error-unmatch <path>` exits 0), plain move otherwise.
-2. Rewrite its own `## Index` bullet targets: they were relative to the parent folder, so drop the
-   leading `<last-segment>/` from each target. In `intelligence/tests.md` a bullet
-   `[intelligence/tests/integration.md](tests/integration.md)` becomes
-   `[intelligence/tests/integration.md](integration.md)` in `intelligence/tests/index.md`. Labels are
-   repo-relative and do not change. A target that points at a nested hub already moved by this
-   migration becomes `(<sub>/index.md)`.
+2. Re-base **every relative link in the whole file**, not only the `## Index` bullets — the file now
+   sits one level deeper, so `## Shared`, `## Reference`, and inline links move with it (see "Moving a
+   file re-bases every relative link in it" in `intel:shape`):
+   - A target starting with `<last-segment>/` loses that prefix. In `intelligence/tests.md` a bullet
+     `[intelligence/tests/integration.md](tests/integration.md)` becomes
+     `[intelligence/tests/integration.md](integration.md)` in `intelligence/tests/index.md`. A target
+     pointing at a nested hub already moved by this migration becomes `(<sub>/index.md)`.
+   - **Every other relative target gains `../`** — a link to a sibling topic
+     (`(code-guidelines.md)`) would otherwise resolve inside the new folder and dangle; it becomes
+     `(../code-guidelines.md)`.
+   - Absolute URLs, repo-root paths, and bare `#anchor` links are left alone. Labels are
+     repo-relative and do not change.
 3. Retarget the bullet pointing at this topic in its parent index — `intelligence/index.md` for a
    top-level topic, otherwise the parent hub's `index.md`: label `intelligence/<path>.md` →
    `intelligence/<path>/index.md`, target `<segment>.md` → `<segment>/index.md`. Leave the
@@ -134,7 +140,30 @@ children have their final names. For each match `intelligence/<path>.md`:
 
 - No `intelligence/**/*.md` file outside the root both contains `^## Index` and has a sibling
   directory of the same name.
+- **Every relative link in every moved file resolves** — the whole body, not just `## Index` bullets.
 - Every bullet target in every `index.md` resolves to an existing file.
 - No file was left behind at the old hub path.
 
-**Report:** hubs moved (old path → new path), bullets retargeted per index file, anything unresolved.
+**Report:** hubs moved (old path → new path), links re-based per file (index bullets and body links
+counted separately), anything unresolved.
+
+## M003 — repair relative links left dangling by an earlier M002 run
+
+M002 originally re-based only `## Index` bullets, so a hub moved by an early 2.0.x run can still carry
+body links (`## Shared`, `## Reference`, inline) that resolve inside the new folder instead of beside
+it. M002 is already in those ledgers and is never re-run, so the repair is its own migration.
+
+**Detect** — fires when any `intelligence/**/index.md` below the root contains a relative Markdown
+target that does **not** resolve from its own folder but **does** resolve with `../` prepended.
+
+**Fix** — for each such link, prepend `../` to the target. Leave the label, absolute URLs, repo-root
+paths, and `#anchor` links untouched. A dangling target that does not resolve with `../` either is
+**not** this migration's business: report it, change nothing.
+
+**Verify:**
+
+- Every relative link in every `intelligence/**/index.md` resolves from its own folder, or is listed
+  in the report as unresolved for another reason.
+- No label text changed.
+
+**Report:** files touched, each link re-based (before → after), links left dangling for another reason.

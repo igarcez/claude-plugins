@@ -18,7 +18,7 @@ Add the [claude-plugins](https://github.com/igarcez/claude-plugins) marketplace,
 | `/intel setup` | Bootstrap the layer: harvest existing docs (`CLAUDE.md`, `AGENTS.md`, cursor rules, READMEs, verbose code comments), verify every rule against current code, write `intelligence/*.md` + `intelligence/index.md`, reduce `CLAUDE.md` to the pointer stanza. Also migrates a knowledge-dump `CLAUDE.md` in an already-started layer. |
 | `/intel add <topic>` | Interview → verify → write a new `intelligence/<topic>.md` + index bullet. `add <topic>/<sub>` writes `intelligence/<topic>/<sub>.md` under the hub `intelligence/<topic>/index.md`, converting a flat topic into a hub when needed. |
 | `/intel maintain` | Full audit: index ↔ files consistency, preamble drift, per-file accuracy (commands/paths/citations re-verified), split/merge of over-broad or decayed files, coverage gaps from recent git history. |
-| `/intel upgrade` | Detect and apply pending layer migrations (registry in `intel:migrations`): moving a pre-2.0 index out of `CLAUDE.md` into `intelligence/index.md`, and pre-2.0 hubs from `intelligence/<topic>.md` into `intelligence/<topic>/index.md`. Applies immediately, reports what changed. |
+| `/intel upgrade` | Detect and apply pending layer migrations (registry in `intel:migrations`): moving a pre-2.0 index out of `CLAUDE.md` into `intelligence/index.md`, and pre-2.0 hubs from `intelligence/<topic>.md` into `intelligence/<topic>/index.md`, re-basing the relative links each move invalidates. Applies immediately, reports what changed. |
 
 Applied migrations are recorded per layer in a ledger on your machine —
 `${XDG_STATE_HOME:-~/.local/state}/intel/applied/<repo-path>.txt`, overridable with

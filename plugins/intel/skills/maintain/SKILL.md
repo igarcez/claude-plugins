@@ -49,6 +49,11 @@ Audit every level.
   but absent from the hub's `## Index`; hub bullets pointing at missing files; duplicate entries;
   targets not relative to the hub. A hub whose folder holds 0–1 files besides `index.md` is a merge
   candidate (step 3b), at any depth.
+- **Dangling relative links anywhere in the layer** — not just `## Index` bullets. Resolve every
+  relative Markdown target in every `intelligence/**/*.md` against the folder of the file holding it,
+  and report any that does not exist. A link that resolves once `../` is prepended is a file that
+  moved deeper without its links being re-based (see "Moving a file re-bases every relative link in
+  it" in `intel:shape`) — treat that as a safe fix.
 
 ## 2. Preamble drift
 
@@ -128,10 +133,13 @@ sub-index" in `intel:shape`) — no re-reading of the files themselves should be
   4. Delete the old flat `intelligence/<topic>.md`.
   5. Retarget the parent bullet to `(<topic>/index.md)` and broaden its `If <trigger>` wording to the
      whole area if it was specific to the old flat file.
+  6. Re-base every relative link that moved into the folder — each one now resolves one level deeper
+     (see "Moving a file re-bases every relative link in it" in `intel:shape`).
 - **Merge candidates.** Flag any hub whose folder now holds 0–1 files besides `index.md`, or whose
   sub-files are each tiny and always read together. Propose collapsing back via `AskUserQuestion`:
   fold the sub-files' content into a flat `intelligence/<topic>.md`, delete the folder including its
-  `index.md`, and retarget the parent bullet back to `(<topic>.md)`.
+  `index.md`, retarget the parent bullet back to `(<topic>.md)`, and re-base the folded-in relative
+  links for their new, shallower home.
 
 Splitting and merging are **judgement calls** — never restructure silently; confirm via
 `AskUserQuestion` first, then apply in step 4.

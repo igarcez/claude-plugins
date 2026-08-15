@@ -38,8 +38,10 @@ tell the user to run `/intel upgrade` first and stop.
     to a hub before continuing deeper. Converting: create `intelligence/<path-so-far>/`, move the
     leaf's body to `intelligence/<path-so-far>/<name>.md` (ask for `<name>`, default the last path
     segment), write `intelligence/<path-so-far>/index.md` as the hub with one bullet for that
-    sub-file, delete the old flat file, and retarget the parent index bullet from `(<segment>.md)` to
-    `(<segment>/index.md)` — see "When a file grows too broad" in `intel:shape`.
+    sub-file, delete the old flat file, retarget the parent index bullet from `(<segment>.md)` to
+    `(<segment>/index.md)`, and re-base every relative link the moved body carried (it now sits one
+    level deeper) — see "When a file grows too broad" and "Moving a file re-bases every relative link
+    in it" in `intel:shape`.
   - Neither the leaf nor the hub exists → create `intelligence/<path-so-far>/index.md` as part of
     this add, and add its bullet to the parent index.
 - The final segment's file already exists → tell the user the file exists and stop.
