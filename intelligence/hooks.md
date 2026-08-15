@@ -51,6 +51,12 @@ Installing the plugin registers the hooks — no user `settings.json` edits need
   hooks are also converted to `SubagentStop`, so exit when `.agent_id` is non-empty unless
   subagent turns are meant to fire too.
 
+- **Lockstep when a hook's trigger condition or env flag changes.** The condition ("fires in a project
+  that has X") and every env switch are stated in three places: the comment at the top of the hook
+  script, the hook section of `plugins/<plugin>/README.md` (**both** its opening sentence and its
+  numbered list — patching only the list leaves the section contradicting itself), and the matching
+  `## Reference: <script>` section in `intelligence/hooks.md`. Update all three in the same change.
+
 ## Portability
 
 Scripts must run on macOS (bash 3.2 / BSD userland) **and** Linux:
@@ -66,9 +72,13 @@ Scripts must run on macOS (bash 3.2 / BSD userland) **and** Linux:
 
 ## Reference: intel-haiku.sh (intel plugin's UserPromptSubmit hook)
 
-On every prompt in a project whose cwd root has an `intelligence/index.md`, it:
+On every prompt in a project whose cwd root has an `intelligence/index.md` **or** an
+`intelligence/local/index.md`, it:
 
-1. Injects the `intelligence/index.md` index as context.
+1. Injects the `intelligence/index.md` index as context, plus the gitignored machine-local
+   `intelligence/local/index.md` when it exists (`CLAUDE_INTEL_LOCAL=0` disables the local half).
+   Either index alone is enough to run; a legacy-layout warning is prepended, not substituted, when
+   the tracked index is missing but a local layer exists.
 2. Resolves plan references in the prompt (plan-md ids: 3-char lowercase-alphanumeric like `a3f`;
    legacy numerics `11` → `plans/011-*.plan.md`) and feeds matched plan files as evidence.
 3. Expands hubs — every `intelligence/<path>/index.md` is a hub (`find -mindepth 2 -name index.md`,
@@ -76,6 +86,9 @@ On every prompt in a project whose cwd root has an `intelligence/index.md`, it:
    sub-files (any depth) can be selected directly.
 4. Asks headless Haiku which `intelligence/*.md` files match, then injects the selected files in full.
    The root `intelligence/index.md` is never re-injected as a selection.
+5. Skips both `index.md` files when injecting the selector's answer — they are already in the
+   context — and prunes `intelligence/local/index.md` from the hub scan while still expanding hubs
+   nested inside the local layer.
 
 When there is no `intelligence/index.md` but a pre-2.0 layer is detected (root `CLAUDE.md` with a
 `## Index` section, or `intelligence/*.md` files), it emits a single line telling the user to run
@@ -83,10 +96,10 @@ When there is no `intelligence/index.md` but a pre-2.0 layer is detected (root `
 
 ## Reference: intel-capture.sh (intel plugin's Stop hook)
 
-At the end of every main-thread turn in a project whose cwd root has an `intelligence/index.md`, it
-injects a one-line self-check: is anything this turn established worth
-`/intel add`, or did the turn prove an existing `intelligence/*.md` rule wrong (fix or remove)?
-Claude answers in one line or stays silent.
+At the end of every main-thread turn in a project whose cwd root has an `intelligence/index.md` or an
+`intelligence/local/index.md`, it injects a one-line self-check: is anything this turn established
+worth `/intel add` (project-shared or machine-local), or did the turn prove an existing intelligence
+rule wrong (fix or remove)? Claude answers in one line or stays silent.
 
 - No child model call — the main model already holds the turn's context and is the judge, so the
   hook is instant and needs no `"timeout"` override.
@@ -94,4 +107,5 @@ Claude answers in one line or stays silent.
   written before emitting, pruned after 7 days.
 - Skips subagents (`.agent_id` non-empty) and continuations (`.stop_hook_active`).
 - `CLAUDE_INTEL_CAPTURE=0` disables it without touching the auto-loading hook.
-- No-ops instantly when `jq` is missing or the cwd root has no `intelligence/index.md`.
+- No-ops instantly when `jq` is missing or the cwd root has neither `intelligence/index.md` nor
+  `intelligence/local/index.md`.

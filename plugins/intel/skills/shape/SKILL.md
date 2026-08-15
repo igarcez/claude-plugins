@@ -133,6 +133,78 @@ every insertion above them (one new function near the top of a file shifts every
 - **Lockstep:** when you edit a file an intel file cites, re-grep its symbols and update any moved `:line`
   in the same change.
 
+## The machine-local layer (`intelligence/local/`)
+
+`intelligence/local/` is a **gitignored hub** holding rules that are true only on this user's
+machine. Every layer has one — it is created by `/intel setup` and by migration `M004`, never
+opted into. It is a normal hub in every structural respect (own `index.md`, sub-files, nesting to
+any depth, same "Shape of an intelligence file" rules), with four differences:
+
+1. **Never indexed from `intelligence/index.md`.** The root index is tracked; a bullet pointing at
+   a gitignored folder dangles for every teammate. Discovery happens through the canonical
+   preamble's rule 7 and through the `intel-haiku.sh` hook, which injects both indexes on every
+   prompt.
+2. **`local` is reserved at the top level.** `intelligence/local.md` must never exist, and
+   `/intel add local` is refused — the name always means this hub.
+3. **Gitignored in the repo's `.gitignore`**, via the exact line `intelligence/local/`.
+4. **Precedence:** a local file wins on environment facts (where a tool lives on this machine,
+   which personal plugin/agent is installed, this workstation's paths, ports, and versions). It
+   must never restate or override a project convention — when a local rule contradicts a tracked
+   rule about the project itself, the tracked rule wins and the conflict is reported.
+
+### What belongs in `intelligence/local/`
+
+Machine-local — route here:
+
+- Rules that depend on the user's personal plugins, agents, skills, or slash commands.
+- Absolute paths under `$HOME`, personal dotfiles, shell aliases, or editor setup.
+- Tool locations, versions, or credentials paths specific to this workstation.
+- Local service ports, container names, or database instances the team does not share.
+- Personal workflow preferences that no teammate is expected to follow.
+
+Project-shared — route to the tracked layer:
+
+- Anything derived from the repo's own code, config, scripts, or CI.
+- Conventions a teammate on a fresh clone must also follow.
+- Commands defined by the project (`package.json` scripts, Makefile targets, `composer.json`).
+
+### Shape of `intelligence/local/index.md`
+
+```markdown
+# Machine-local intelligence index
+
+Index of machine-local instructions — rules that hold only on this workstation. This folder is
+gitignored: nothing here is shared with the team.
+
+## How to use this index
+
+1. **Match the same way as the project index.** Read every file whose `If <trigger>` matches the
+   task at hand, before acting.
+2. **Environment facts only.** These files describe this machine — personal plugins, personal
+   paths, local services, personal workflow. Project conventions live in the tracked
+   `intelligence/` layer and always win on questions about the project itself.
+3. **Keep it out of git.** Never move content from here into a tracked `intelligence/*.md` file
+   without the user's explicit approval.
+
+## Index
+
+- If <trigger A> → read [intelligence/local/<topic-a>.md](<topic-a>.md)
+```
+
+The preamble (`# Machine-local intelligence index` through end of `## How to use this index`) is
+**fixed**. Only the `## Index` bullets change. A freshly created local layer has an empty
+`## Index` section — that is valid, not a gap.
+
+### Creating the local layer
+
+Whenever a branch must ensure the local layer exists (`setup`, `add` routing local, `M004`):
+
+1. Create `intelligence/local/`.
+2. Write `intelligence/local/index.md` with the fixed preamble above and an empty `## Index`.
+3. Ensure the repo's `.gitignore` contains the exact line `intelligence/local/`; create
+   `.gitignore` with that single line when the file does not exist, append it (on its own line)
+   when the line is absent, and change nothing when it is already present.
+
 ## Shape of `intelligence/index.md`
 
 ```markdown
@@ -159,7 +231,11 @@ Index of project instructions. Read the referenced file when its trigger matches
    wrong path, wrong command, outdated rule, contradicts the current code, typo that changes meaning —
    fix it in the file as part of the current change. Don't leave a broken instruction in place for the
    next reader to trip over.
-6. **Check the system-wide layer for local-app configs.** When the task touches configuration of
+6. **Read the machine-local layer when present.** If `intelligence/local/index.md` exists, match its
+   `If <trigger>` bullets the same way and read every matching file. It is gitignored, so its
+   absence is normal — never treat a missing local layer as an error, and never move its content
+   into a tracked file.
+7. **Check the system-wide layer for local-app configs.** When the task touches configuration of
    local apps / dotfiles under `~/.config/`, also read `~/.config/intelligence/index.md` and scan
    its own index — it carries cross-config hooks and machine-wide intel that span configs beyond
    this repo.

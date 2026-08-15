@@ -54,6 +54,16 @@ Audit every level.
   and report any that does not exist. A link that resolves once `../` is prepended is a file that
   moved deeper without its links being re-based (see "Moving a file re-bases every relative link in
   it" in `intel:shape`) — treat that as a safe fix.
+- `intelligence/local/index.md` ↔ its own folder — audit it exactly like any other hub (sibling
+  files missing from its `## Index`, bullets pointing at missing files, duplicates, targets not
+  relative to the hub, nested local hubs at any depth). An empty `## Index` in a local layer with no
+  sub-files is correct, not a finding.
+- The local layer is **never** indexed from `intelligence/index.md`. Report any root-index bullet
+  whose target is under `intelligence/local/` and offer to delete that bullet (the tracked index must
+  not reference the gitignored folder — see "The machine-local layer" in `intel:shape`).
+- Local layer presence — when `intelligence/local/index.md` is missing, or the repo `.gitignore`
+  lacks the exact line `intelligence/local/`, treat as a **safe fix**: follow "Creating the local
+  layer" in `intel:shape` and list it in the report.
 
 ## 2. Preamble drift
 
@@ -62,6 +72,9 @@ Compare the `# Project intelligence index` and `## How to use this index` block 
 `intel:shape`, and the `## Project intelligence` stanza in `CLAUDE.md` against "Shape of `CLAUDE.md`".
 If either has drifted (wording changes, missing rules), report the diff and offer to restore the
 canonical text. Do not silently overwrite, and never touch `CLAUDE.md` content below the stanza.
+
+Check the local layer's preamble the same way against "Shape of `intelligence/local/index.md`" in
+`intel:shape`, and report its drift under the local section of the report.
 
 ## 2a. Citation-convention presence
 
@@ -87,6 +100,7 @@ safe fixes in their own file, and report; every judgement call bubbles up throug
 Each auditor's prompt must contain:
 
 - The assigned file's path, and that it may edit **only that file** — everything else is read-only.
+  Leaves under `intelligence/local/` get an auditor too, on the same terms.
 - The audit checklist:
   - Re-verify every command (Makefile targets, npm/composer scripts, binaries) still exists with
     the same signature.
@@ -97,6 +111,12 @@ Each auditor's prompt must contain:
     hand-counting.
   - Check for contradictions between the file and current code (e.g. file says "tests live in
     `tests/`" but tests now live in `spec/`).
+  - For a file under `intelligence/local/`: confirm every rule is still an environment fact about
+    this machine, and flag any rule that has become a project convention (belongs in the tracked
+    layer).
+  - For a tracked file: flag any rule that is machine-local — paths under `$HOME`, personal
+    plugins/agents/skills, this-workstation-only tooling, personal ports or service names — as a
+    `reclassify` item. Never move it; the main thread decides.
 - The full "Citing code locations" rules copied from `intel:shape` — a subagent does not inherit
   your loaded skills; the rules must travel in the prompt.
 - Authority to apply **safe fixes** directly in its assigned file: typos, wrong paths, renamed
@@ -108,6 +128,7 @@ Each auditor's prompt must contain:
   - `structure`: line count; distinct sub-areas covered; split candidate yes/no, and if yes the
     proposed sub-files with an `If <sub-trigger>` each (criteria in step 3b)
   - `contradictions`: file-vs-code conflicts found
+  - `reclassify`: rules that belong in the other layer (exact line, current layer, proposed layer)
 
 Collect all reports before continuing. Trust them — do not re-verify audited items in the main
 thread; spot-check only a report that is internally inconsistent.
@@ -154,6 +175,11 @@ report. What remains for the main thread:
 - **Judgement calls** (drift-major items, rule no longer applies, convention has shifted, file should
   be split or merged) — surface via `AskUserQuestion` before changing anything, then apply what the
   user approves.
+- **Reclassification** (auditor `reclassify` items) — for each, ask via `AskUserQuestion` whether to
+  move it. On approval: delete the rule from its current file and append it to the target file in the
+  other layer (creating `intelligence/local/<topic>.md` plus its local-index bullet when no local
+  file fits, following the `add` write rules), and never leave the rule duplicated in both layers.
+  On decline, leave both files untouched and list the item in the report.
 
 ## 5. Coverage gap check
 
@@ -178,6 +204,14 @@ Citation convention: <present | added intel-citations.md>
 Per-file accuracy:   <N OK, M drift-minor (fixed), K drift-major (raised)>
 Structure:           <N splits, M merges — proposed/applied; sub-files touched>
 Coverage gaps:       <list of topics flagged for the user>
+
+Machine-local layer (intelligence/local/, gitignored)
+-----------------------------------------------------
+Presence:            <ok | created | .gitignore line added>
+Index ↔ files:       <N OK, M issues fixed, K issues raised>
+Preamble:            <ok | drifted, restored | drifted, awaiting decision>
+Per-file accuracy:   <N OK, M drift-minor (fixed), K drift-major (raised)>
+Reclassified:        <rules moved tracked → local, local → tracked, or "none">
 
 Changes applied:
 - <file>: <one-line summary>

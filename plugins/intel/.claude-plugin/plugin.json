@@ -1,7 +1,7 @@
 {
   "name": "intel",
   "description": "Project intelligence layer manager — bootstrap, extend, and audit an intelligence/index.md index + intelligence/*.md topic files",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "author": {
     "name": "Ian Garcez",
     "url": "https://github.com/igarcez"

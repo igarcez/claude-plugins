@@ -65,7 +65,9 @@ lack; do not overwrite them with the `CLAUDE.md` wording.
      filename match alone); drop from `CLAUDE.md` with no edit needed elsewhere.
    - **extend** — existing intel file is the right home but missing this rule/command; plan
      an edit that appends to it.
-   - **new** — no existing intel file fits; plan a new `intelligence/<topic>.md`.
+   - **new** — no existing intel file fits; plan a new `intelligence/<topic>.md`, or
+     `intelligence/local/<topic>.md` when the item is machine-local per "What belongs in
+     `intelligence/local/`" in `intel:shape`.
    Present this mapping to the user via `AskUserQuestion` (offer to reassign any item) before
    touching files. If many items map to the same new topic, batch them.
 4. **Verify before writing.** For every `extend` / `new` plan, run the verification step
@@ -155,6 +157,11 @@ For each confirmed topic:
 - If a topic is already large and separable at setup time, author it as a sub-index from the start
   (`intelligence/<topic>/index.md` hub + `intelligence/<topic>/<sub>.md` files) rather than one
   oversized file — see "When a file grows too broad" in `intel:shape`.
+- Route each confirmed topic to a layer using "What belongs in `intelligence/local/`" in
+  `intel:shape`: project-shared topics become `intelligence/<topic>.md`; anything true only on this
+  machine (personal plugins, `$HOME` paths, personal tooling, local-only services) becomes
+  `intelligence/local/<topic>.md`. When the classification is genuinely ambiguous, ask once via
+  `AskUserQuestion` listing the ambiguous topics and their proposed layer.
 
 ## 5a. Offer to migrate verbose comments
 
@@ -188,6 +195,12 @@ heading, the canonical `## Project intelligence` stanza from "Shape of `CLAUDE.m
 then every section of the old file that is not project coding guidance, verbatim and in its original
 order. Never drop user content the intelligence layer did not put there.
 
+Then create the machine-local layer — follow "Creating the local layer" in `intel:shape` (create
+`intelligence/local/`, write `intelligence/local/index.md` with the fixed preamble, ensure the
+`.gitignore` line `intelligence/local/`). Every layer has one, whether or not any machine-local
+topic was extracted. Add one bullet to `intelligence/local/index.md` per machine-local file written
+in step 5, and **no** bullet for them in `intelligence/index.md`.
+
 Finally stamp the ledger: append every id in the `intel:migrations` registry as `baseline` for this
 layer (see "The applied-migration ledger"). A layer born in the current shape must never have an old
 migration applied to it later.
@@ -201,7 +214,8 @@ duplicated rules.
 
 ## 8. Report
 
-Tell the user: which topics were extracted, which rules were dropped as stale (and why), which
+Tell the user: which topics were extracted, which were routed to the machine-local layer
+(`intelligence/local/`, gitignored) and why, which rules were dropped as stale (and why), which
 intelligence files were created, that `intelligence/index.md` now holds the index, and which
 `CLAUDE.md` sections were preserved below the pointer stanza. Also report on
 verbose comments: how many were promoted into intel files, how many were migrated (with file + line

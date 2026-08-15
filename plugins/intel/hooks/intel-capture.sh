@@ -19,7 +19,8 @@ case "$(printf '%s' "$input" | jq -r '.stop_hook_active // false')" in true) exi
 
 cwd="$(printf '%s' "$input" | jq -r '.cwd // empty')"
 [ -n "$cwd" ] || exit 0
-[ -f "$cwd/intelligence/index.md" ] || exit 0
+# Either layer is enough: a repo can carry only the machine-local one.
+if [ ! -f "$cwd/intelligence/index.md" ] && [ ! -f "$cwd/intelligence/local/index.md" ]; then exit 0; fi
 
 session_id="$(printf '%s' "$input" | jq -r '.session_id // empty')"
 [ -n "$session_id" ] || exit 0
@@ -36,6 +37,6 @@ key="${TMPDIR:-/tmp}/intel-capture-${session_id}-${prompt_id}"
 : > "$key" 2>/dev/null || exit 0
 find "${TMPDIR:-/tmp}" -maxdepth 1 -name 'intel-capture-*' -mtime +7 -delete 2>/dev/null
 
-ctx="Intel check: anything durable from this turn worth \`/intel add\`, or any intelligence/*.md rule this turn proved wrong (fix or remove)? One line, or stay silent."
+ctx="Intel check: anything durable from this turn worth \`/intel add\` — project-shared, or machine-local (personal tooling, \$HOME paths, this-workstation-only facts) into intelligence/local/ — or any intelligence rule this turn proved wrong (fix or remove)? One line, or stay silent."
 
 jq -n --arg c "$ctx" '{hookSpecificOutput:{hookEventName:"Stop",additionalContext:$c}}'

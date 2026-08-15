@@ -167,3 +167,41 @@ paths, and `#anchor` links untouched. A dangling target that does not resolve wi
 - No label text changed.
 
 **Report:** files touched, each link re-based (before → after), links left dangling for another reason.
+
+## M004 — every layer gains the machine-local hub `intelligence/local/`
+
+**Detect** — fires when `intelligence/index.md` exists and any of these hold:
+
+- `intelligence/local/index.md` does not exist, **or**
+- the repo's `.gitignore` has no line exactly equal to `intelligence/local/`, **or**
+- `intelligence/index.md` has a `## How to use this index` section with no rule mentioning
+  `intelligence/local/index.md`.
+
+**Fix:**
+
+1. Create `intelligence/local/` when missing.
+2. Write `intelligence/local/index.md` when missing, using the fixed preamble in "Shape of
+   `intelligence/local/index.md`" (`intel:shape`) with an empty `## Index` section. Never overwrite
+   an existing one.
+3. Ensure the repo `.gitignore` contains the exact line `intelligence/local/` — create the file
+   with that single line when absent, append it on its own line when the line is missing, leave the
+   file untouched when it is already present.
+4. Update the preamble of `intelligence/index.md` to the current canonical text in "Shape of
+   `intelligence/index.md`" (`intel:shape`): insert the machine-local rule as rule 6 and renumber
+   the system-wide-layer rule to 7. Change nothing under `## Index`, and change nothing in
+   `CLAUDE.md`.
+5. Flat `intelligence/local.md` collision: when that file exists, do **not** delete or overwrite it —
+   leave it in place, skip steps 1–2, and report the collision. `local` is reserved, so the user
+   must rename that topic before the local layer can exist.
+
+**Verify:**
+
+- `intelligence/local/index.md` exists, carries the fixed local preamble, and has a `## Index`
+  section (possibly empty), unless the collision in Fix step 5 was reported.
+- The repo `.gitignore` contains the line `intelligence/local/`.
+- `intelligence/index.md` preamble contains the machine-local rule and still has exactly one rule
+  per number with no duplicates; its `## Index` bullets are byte-identical to before the Fix.
+- No bullet in `intelligence/index.md` targets a path under `intelligence/local/`.
+
+**Report:** local layer created or already present, `.gitignore` line added or already present,
+index preamble updated or already current, `intelligence/local.md` collision if any.
