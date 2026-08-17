@@ -161,12 +161,38 @@ Machine-local — route here:
 - Tool locations, versions, or credentials paths specific to this workstation.
 - Local service ports, container names, or database instances the team does not share.
 - Personal workflow preferences that no teammate is expected to follow.
+- Anything naming a specific branch, PR/MR, issue, ticket, or commit SHA — an instance, not a
+  convention.
+- Scratchpad and temp-file paths, and one-off command output, log excerpts, or stack traces from a
+  session.
+- Example sets, fixture data, or reproduction steps gathered from a single investigation.
 
 Project-shared — route to the tracked layer:
 
 - Anything derived from the repo's own code, config, scripts, or CI.
 - Conventions a teammate on a fresh clone must also follow.
 - Commands defined by the project (`package.json` scripts, Makefile targets, `composer.json`).
+- The general rule behind an instance-specific observation, stated without the branch, PR number,
+  path, or output that revealed it.
+
+### Generalize first, then route
+
+An observation that names a branch, a PR, a ticket, a scratchpad path, or one session's output is
+an **instance**. Split it before routing: the durable general rule goes to the tracked layer, the
+instance itself goes to `intelligence/local/`.
+
+| Observed | Tracked layer gets | Local layer gets |
+|----------|--------------------|------------------|
+| `feat/checkout-v2` broke until `npm run codegen` ran after pulling schema changes | "Run `npm run codegen` after any schema change" | — |
+| Review on PR #412 rejected inline SQL twice | "Use the query builder — inline SQL is rejected in review" | — |
+| A scratchpad script reproduced the cache race | the reproduction pattern, if it holds generally | the script's path, when the user keeps reusing it |
+| The local `api` container is named `acme-api-ian` | — | the container name |
+
+- Never let a tracked file carry the instance.
+- When nothing durable remains after extracting the general rule, save only the general rule — do
+  not create a local file to hold the leftover instance.
+- Instance facts go stale fast: delete them from the local layer once the branch merges or the PR
+  closes.
 
 ### Shape of `intelligence/local/index.md`
 
