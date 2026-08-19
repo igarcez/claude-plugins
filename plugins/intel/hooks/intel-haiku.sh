@@ -54,7 +54,8 @@ if ! command -v claude >/dev/null 2>&1 || [ -z "$prompt" ]; then emit "$ctx"; ex
 # Resolve plan references in the prompt as evidence (see intelligence/hooks.md).
 evidence=""
 seen_plan=" "
-cands="$(printf '%s' "$prompt" | tr '[:upper:]' '[:lower:]' | grep -owE '[a-z0-9]{3}' | head -n 8)
+cands="$(printf '%s' "$prompt" | tr '[:upper:]' '[:lower:]' | grep -owE '[a-z]{3,8}-[a-z]{3,8}' | head -n 4)
+$(printf '%s' "$prompt" | tr '[:upper:]' '[:lower:]' | grep -owE '[a-z0-9]{3}' | head -n 8)
 $(printf '%s' "$prompt" | grep -owE '[0-9]{1,3}' | head -n 4 | while IFS= read -r n; do [ -n "$n" ] && printf '%03d\n' "$((10#$n))"; done)"
 for tok in $cands; do
   for plan in "$cwd"/plans/"$tok"-*.plan.md; do

@@ -9,4 +9,4 @@ description: "Branch of /plan-md: list active and completed plans (subcommand li
 2. List all active `*.plan.md` files in `plans/` AND all completed `*.plan.md` files in `plans/done/`.
 3. For each plan, show its **id**, name, and the `## Goal` section content. Format: `[ID] <name> — <goal>`. Completed plans (those under `plans/done/`) display as `[ID] [DONE] <name> — <goal>`.
 4. If no plans exist in either location, tell the user.
-5. Remind the user they can reference plans by id, e.g., `/plan-md review a3f` or `/plan-md execute k90`.
+5. Remind the user they can reference plans by id, e.g., `/plan-md review river-tiger` or `/plan-md execute lemon-orbit`.

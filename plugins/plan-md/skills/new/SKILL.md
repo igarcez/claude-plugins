@@ -1,24 +1,20 @@
 ---
 name: new
 description: "Branch of /plan-md: interview the user and write a new plan (empty argument). Internal: loaded by the plan-md command; not a standalone task."
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/new-plan-id.sh)
 ---
 
 # plan-md — create a new plan
 
-**ID assignment:** Before creating a new plan, run this inline script to get a fresh id (random 3-char code, retried until it doesn't collide with an existing active plan; the `done/` folder is intentionally ignored):
+**ID assignment:** Before creating a new plan, run the bundled id script from the directory that holds `plans/`. It prints a fresh id — two BIP39 English words joined by a hyphen (e.g. `river-tiger`) — redrawn until it doesn't collide with an existing active plan; the `done/` folder is intentionally ignored:
 
 ```bash
-python3 -c "
-import glob, os, random, string
-active = {os.path.basename(f)[:3].lower() for f in glob.glob(os.path.join('plans', '*.plan.md'))}
-while True:
-    i = ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
-    if i not in active:
-        print(i); break
-"
+${CLAUDE_SKILL_DIR}/scripts/new-plan-id.sh
 ```
 
 Use the output as the `<ID>` prefix for the new plan filename.
+
+**If the script is missing or exits non-zero:** draw the id yourself — pick two words at random from the BIP39 English wordlist, join them with a hyphen, then run `ls plans/ | grep -i "^<ID>-"`; redraw while that command prints anything, and use the first id that prints nothing.
 
 ### 1. Establish goal
 Ask the user what they want to accomplish, or infer from recent conversation. Restate the goal in one sentence and get confirmation before any further work.

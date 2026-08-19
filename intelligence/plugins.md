@@ -9,6 +9,7 @@ This repo is a Claude Code plugin **marketplace monorepo**: one directory per pl
 - `plugins/<name>/.claude-plugin/plugin.json` — per-plugin manifest.
 - `plugins/<name>/commands/*.md` — slash commands. See [commands.md](commands.md).
 - `plugins/<name>/skills/<skill>/SKILL.md` — skills. See [skills.md](skills.md).
+- `plugins/<name>/skills/<skill>/scripts/` — helper scripts bundled with a skill. See [skills.md](skills.md).
 - `plugins/<name>/hooks/` — hooks (`hooks.json` + scripts). See [hooks.md](hooks.md).
 - `plugins/<name>/README.md` — per-plugin usage doc.
 

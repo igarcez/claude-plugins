@@ -21,7 +21,7 @@ Add the [claude-plugins](https://github.com/igarcez/claude-plugins) marketplace,
 | `/plan-md review <id>` | Address `claude:` feedback comments left in a plan |
 | `/plan-md execute <id>` | Execute a plan step by step, tracking plan gaps |
 
-Plans are referenced by a random 3-character id (e.g. `a3f`) or full name. Completed plans move to `plans/done/`.
+Plans are referenced by an id of two BIP39 words (e.g. `river-tiger`) or by full name. Plans created before v1.2.0 keep their legacy 3-character id (e.g. `a3f`) and still resolve. Completed plans move to `plans/done/`.
 
 `setup` is optional: every other subcommand verifies the folder structure first and runs the setup steps on the spot when `plans/` or `plans/done/` is missing — including asking once whether the `plans/` directory should be committed to the repo or added to `.gitignore`.
 
@@ -37,6 +37,7 @@ commands/
 skills/
   setup/SKILL.md       folder structure + git tracking decision
   new/SKILL.md         interview → write a new plan (empty argument)
+  new/scripts/new-plan-id.sh  id generator — two BIP39 words, wordlist embedded
   list/SKILL.md        list active + completed plans
   review/SKILL.md      address claude: feedback comments
   execute/SKILL.md     execute a plan step by step, track plan gaps

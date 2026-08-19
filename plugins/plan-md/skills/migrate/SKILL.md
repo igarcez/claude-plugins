@@ -5,7 +5,7 @@ description: "Branch of /plan-md: legacy DONE-marker migration, run before any s
 
 # plan-md — legacy DONE migration
 
-**Legacy naming (pre-migration):** an earlier version of `/plan-md` marked a completed plan by renaming it in place to `<ID>-DONE-<name>.plan.md` inside `plans/` (no `done/` folder). Those files may still be the last completed plans in a project. Treat any `plans/*.plan.md` whose name contains `DONE` as a completed plan, and migrate it with the script below whenever scanning the plans directory. (Old numeric ids like `001` are still valid 3-char handles, so they keep resolving.)
+**Legacy naming (pre-migration):** an earlier version of `/plan-md` marked a completed plan by renaming it in place to `<ID>-DONE-<name>.plan.md` inside `plans/` (no `done/` folder). Those files may still be the last completed plans in a project. Treat any `plans/*.plan.md` whose name contains `DONE` as a completed plan, and migrate it with the script below whenever scanning the plans directory. (Legacy handles — numeric ids like `001` and 3-character ids like `a3f` — are never rewritten to the word-word format, and keep resolving.)
 
 Run this at the start of the `list`, `review`, `execute`, and `setup` branches:
 

@@ -7,9 +7,9 @@ description: "Branch of /plan-md: execute a plan step by step, tracking plan gap
 
 Load skill `plan-md:migrate` and run the legacy DONE migration first, so completed plans are normalized into `plans/done/` before name resolution.
 
-Parse the plan name from the argument. The argument may be empty (when user types `/plan-md execute` with no id), a 3-character id, or a full name. Handle all three:
+Parse the plan name from the argument. The argument may be empty (when user types `/plan-md execute` with no id), a plan id (word-word like `river-tiger`, or legacy 3-character like `a3f`), or a full name. Handle all three:
 - Empty argument: Auto-select logic kicks in (see below).
-- 3-character id or full name: Resolve per the dispatcher's id-lookup rule.
+- Plan id or full name: Resolve per the dispatcher's id-lookup rule.
 
 If the argument is empty (user typed `/plan-md execute` with no plan id):
 - If there is exactly one plan in `plans/`, use that one.

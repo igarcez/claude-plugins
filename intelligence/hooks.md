@@ -79,8 +79,9 @@ On every prompt in a project whose cwd root has an `intelligence/index.md` **or*
    `intelligence/local/index.md` when it exists (`CLAUDE_INTEL_LOCAL=0` disables the local half).
    Either index alone is enough to run; a legacy-layout warning is prepended, not substituted, when
    the tracked index is missing but a local layer exists.
-2. Resolves plan references in the prompt (plan-md ids: 3-char lowercase-alphanumeric like `a3f`;
-   legacy numerics `11` → `plans/011-*.plan.md`) and feeds matched plan files as evidence.
+2. Resolves plan references in the prompt (plan-md ids: two hyphenated BIP39 words like
+   `river-tiger`; legacy 3-char lowercase-alphanumeric like `a3f`; legacy numerics `11` →
+   `plans/011-*.plan.md`) and feeds matched plan files as evidence.
 3. Expands hubs — every `intelligence/<path>/index.md` is a hub (`find -mindepth 2 -name index.md`,
    which skips the already-injected root index); its body is appended to the selector input so nested
    sub-files (any depth) can be selected directly.

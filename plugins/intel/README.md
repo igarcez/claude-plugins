@@ -59,7 +59,7 @@ On every prompt in a project whose root has an `intelligence/index.md` or an `in
 
 1. Injects the `intelligence/index.md` index as context, plus `intelligence/local/index.md` when the
    machine-local layer exists. Either index alone is enough for the hook to run.
-2. Asks a headless Haiku subagent (`claude -p --model haiku`, subscription auth — no API key) which `intelligence/*.md` files match the prompt, feeding referenced plan files (`plans/<id>-*.plan.md`, 3-char plan-md ids or legacy numeric) as evidence. Every hub's `index.md` is included in the selector input, so nested sub-files (any depth) are selected and injected directly — not just the hub.
+2. Asks a headless Haiku subagent (`claude -p --model haiku`, subscription auth — no API key) which `intelligence/*.md` files match the prompt, feeding referenced plan files (`plans/<id>-*.plan.md`, word-word plan-md ids like `river-tiger`, plus legacy 3-char and legacy numeric ids) as evidence. Every hub's `index.md` is included in the selector input, so nested sub-files (any depth) are selected and injected directly — not just the hub.
 3. Injects the selected intel files in full.
 
 A layer still on the pre-2.0 layout (index inside `CLAUDE.md`, no `intelligence/index.md`) gets a one-line "run `/intel upgrade`" warning instead of auto-loading. Projects with no layer at all get nothing.
