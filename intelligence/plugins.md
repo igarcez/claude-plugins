@@ -63,15 +63,15 @@ API. Where it goes:
 
 Rules:
 
-- **Never write inside `${CLAUDE_PLUGIN_ROOT}`.** It is a versioned cache
+- **Write plugin state outside `${CLAUDE_PLUGIN_ROOT}`.** It is a versioned cache
   (`~/.claude/plugins/cache/<owner>/<plugin>/<version>/`) replaced on every plugin update — state
   written there disappears.
-- Key per-user state by the layer/repo it describes (repo root with `/` → `-`), never globally, or one
-  repo's state leaks into another.
-- `mkdir -p` first, and treat every write as optional: `|| exit 0` in a hook, never block the prompt.
+- Key per-user state by the layer/repo it describes (repo root with `/` → `-`), so each repo keeps
+  its own state.
+- `mkdir -p` first, and treat every write as optional: `|| exit 0` in a hook, so the prompt proceeds.
 - Offer an env override for testing (`CLAUDE_INTEL_STATE_DIR` in the intel plugin).
 - Prune what accumulates — `intel-capture.sh` deletes its turn markers after 7 days.
-- Concurrent sessions race on the same file: append, or write-then-`mv`, rather than rewriting.
+- Concurrent sessions race on the same file: append, or write-then-`mv`.
 
 The intel plugin's applied-migration ledger (`intel:migrations`) is the canonical example.
 

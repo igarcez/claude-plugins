@@ -18,14 +18,14 @@ description: "<when to use it>"
 
 ## Description conventions
 
-- **Internal skills** (loaded only by a command dispatcher, never run standalone) end the
+- **Internal skills** (loaded only by a command dispatcher) end the
   `description` with: *"Internal: loaded by the <plugin> command; not a standalone task."* — see
   `plugins/intel/skills/add/SKILL.md`, `plugins/plan-md/skills/new/SKILL.md`.
 - **Stack / reference skills** state their activation condition on the first body lines
   (e.g. `plan-md:php` — "Apply when project contains `composer.json`, `*.php`, or `artisan`").
 - **Lockstep with the body.** When a skill's scope changes, update its frontmatter `description` and
   any branch list in its opening lines in the same edit — both name what the skill covers, and the
-  dispatcher and the skill picker read the `description`, not the body.
+  dispatcher and the skill picker read the `description`.
 
 ## Bundled scripts
 

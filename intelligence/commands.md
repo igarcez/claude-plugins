@@ -13,7 +13,8 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion, Agent, Skil
 ---
 ```
 
-- **No `name` field** — the filename is the command name.
+- **The command name comes from the filename** — the frontmatter fields are `description`,
+  `argument-hint`, and `allowed-tools`.
 - `argument-hint` documents the subcommand grammar surfaced to the user.
 - `allowed-tools` is a comma list; include `Skill` when the command loads skills.
 
@@ -26,7 +27,7 @@ For dispatchers:
 - Read the argument via the literal `"$ARGUMENTS"` placeholder in the body.
 - Dispatch on the first token; each branch does `load skill \`<plugin>:<sub>\` and follow it`.
 - Empty argument routes to a default branch (`intel` → `setup`, `plan-md` → `new`).
-- Unknown subcommand: reply with the available-subcommands list and load **no** skill — keep the
+- Unknown subcommand: reply with the available-subcommands list **only** — keep the
   wording *"Unknown subcommand. Available: ..."*.
 - Load any shared-reference skill before branching (e.g. `intel:shape`).
 

@@ -15,15 +15,15 @@ Installing the plugin registers the hooks — no user `settings.json` edits need
 }
 ```
 
-- Reference scripts via `${CLAUDE_PLUGIN_ROOT}` — never a hardcoded path.
+- Reference scripts via `${CLAUDE_PLUGIN_ROOT}`.
 - `type: "command"` hooks run in a normal shell (no agent/tools), receive the event JSON on stdin,
-  and must never block the prompt.
+  and must exit so the prompt proceeds.
 - One manifest registers many events — add a sibling key per event. The intel plugin registers
   `UserPromptSubmit` (`intel-haiku.sh`) and `Stop` (`intel-capture.sh`).
 
 ## Authoring rules (command hooks)
 
-- **Fail-safe: degrade, never error.** On any missing dependency or failure, exit cleanly with
+- **Fail-safe: degrade.** On any missing dependency or failure, exit cleanly with
   reduced output. `intel-haiku.sh` degrades in order: no `jq` / `cwd` → `exit 0` (silent); no
   `intelligence/index.md` → legacy-layout warning if a pre-2.0 layer is detected, else `exit 0`
   (silent); no `claude` CLI or empty prompt → emit index only; selector failure → index only.
@@ -62,12 +62,12 @@ Installing the plugin registers the hooks — no user `settings.json` edits need
 Scripts must run on macOS (bash 3.2 / BSD userland) **and** Linux:
 
 - Target bash 3.2 — no bash-4 features (associative arrays, `${var,,}`). Lowercase via `tr`.
-- `timeout` is absent on stock macOS — never rely on it. Bound long child calls with a plain-bash
-  watchdog instead (single code path on both platforms): run the child in the background writing to a
+- `timeout` is absent on stock macOS — bound long child calls with a plain-bash
+  watchdog (single code path on both platforms): run the child in the background writing to a
   `mktemp` file, spawn a subshell that polls `kill -0` once per second up to the bound and then kills
   the child, `wait` for the child, kill+reap the watchdog, read the temp file. See the selector call
   in `intel-haiku.sh` (bound env-overridable via `CLAUDE_INTEL_SELECTOR_TIMEOUT`, default 40s).
-- Use `printf`, not `echo -e`; POSIX `grep -oE` / `case` globs over GNU-only flags.
+- Use `printf`; POSIX `grep -oE` / `case` globs over GNU-only flags.
 - Optional dependencies (`jq`, `claude`) are probed with `command -v`.
 
 ## Reference: intel-haiku.sh (intel plugin's UserPromptSubmit hook)

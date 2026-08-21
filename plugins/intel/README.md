@@ -77,7 +77,7 @@ The main model is the judge (it already holds the turn's context), so there is n
 ## Key conventions it enforces
 
 - **Index-only `intelligence/index.md`** — a fixed preamble plus one `If <trigger>` bullet per topic; no prose rules in the index itself. `CLAUDE.md` keeps only the pointer stanza, and any user content it already had is preserved.
-- **Tight topic files** — 30–120 lines, imperative rules, `## Commands` tables, split into `intelligence/<topic>/index.md` + sub-files when a topic grows too broad.
+- **Tight topic files** — 30–120 lines, positive imperative rules stating the required behaviour, `## Commands` tables, split into `intelligence/<topic>/index.md` + sub-files when a topic grows too broad.
 - **Greppable citations** — code references anchor on symbols or exact quoted strings, never bare line numbers.
 - **Verified content only** — every command, path, and constant is checked against the current code before it is written or kept.
 
