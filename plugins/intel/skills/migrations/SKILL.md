@@ -94,8 +94,10 @@ Append a new `## M<nnn> — <title>` section with exactly four fields: **Detect*
    each target rewritten relative to `intelligence/` (`[intelligence/tests.md](tests.md)`, and
    `[intelligence/api/index.md](api/index.md)` for a hub).
 6. Rewrite `CLAUDE.md`: `# CLAUDE.md`, then the canonical `## Project intelligence` stanza from
-   "Shape of `CLAUDE.md`" in `intel:shape`, then every preserved user section verbatim in its
-   original order. When `CLAUDE.md` did not exist, write the heading + stanza only.
+   "Shape of the pointer-stanza file" in `intel:shape`, then every preserved user section verbatim in
+   its original order. When `CLAUDE.md` did not exist, write the heading + stanza only. A migrated
+   legacy layer keeps its stanza in `CLAUDE.md` — index shape accepts it there, so nothing moves it
+   to `CLAUDE.local.md`.
 
 **Verify:**
 

@@ -25,9 +25,8 @@ Determine which of three states the repo is in, and route accordingly:
 `/intel add <topic>` to add a new context or `/intel maintain` to audit existing ones."* — and stop.
 
 **State C — Partially bootstrapped.** `intelligence/` exists with ≥1 `*.md` files, **but** the layer
-fails the index-shape check because `CLAUDE.md` still holds project guidance beyond the pointer
-stanza. → Run the migration flow below (step 1a) instead of the full setup. Do **not** stop; do
-**not** wipe existing intelligence files.
+fails the index-shape check. → Run the migration flow below (step 1a) instead of the full setup. Do
+**not** stop; do **not** wipe existing intelligence files.
 
 ### Index-shape check
 
@@ -38,19 +37,23 @@ The layer is in **index shape** when **all** of these hold:
   section whose body is a bullet list of `- If <trigger> → read [intelligence/<topic>.md](<topic>.md)`
   (or `[intelligence/<topic>/index.md](<topic>/index.md)` for a hub) lines and nothing else (see
   "Shape of `intelligence/index.md`" in `intel:shape`).
-- `CLAUDE.md` contains the canonical `## Project intelligence` stanza (see "Shape of `CLAUDE.md`" in
-  `intel:shape`) and no `## Index` or `## How to use this index` section.
-- No section of `CLAUDE.md` outside that stanza contains prose rules, command tables, conventions, or
-  architecture descriptions. Unrelated user content that is not project coding guidance is fine — it
-  stays in `CLAUDE.md` and does not fail this check.
+- `CLAUDE.local.md` **or** `CLAUDE.md` contains the canonical `## Project intelligence` stanza (the
+  block reproduced in step 6). A layer bootstrapped before this version keeps its stanza in
+  `CLAUDE.md`, and that still counts as index shape.
+- The file carrying the stanza has no `## Index` and no `## How to use this index` section.
 
-If any condition fails, treat `CLAUDE.md` as a knowledge-dump and route to State C.
+`CLAUDE.md` is **never** rewritten by this skill. Prose rules, command tables, conventions, or
+architecture descriptions still sitting in `CLAUDE.md` do not fail this check — they are harvested
+read-only in step 2 (State A) or step 1a (State C) and left in place.
+
+If any condition fails, route to State C.
 
 ## 1a. Migration flow (State C only)
 
-Goal: move any rules/commands/conventions currently living in `CLAUDE.md` into the appropriate
-`intelligence/*.md` file (existing or new), then write `intelligence/index.md` and reduce `CLAUDE.md`
-to the pointer stanza plus its non-intel user content. Existing
+Goal: copy any rules/commands/conventions currently living in `CLAUDE.md` into the appropriate
+`intelligence/*.md` file (existing or new), then write `intelligence/index.md` and put the pointer
+stanza in `CLAUDE.local.md`. `CLAUDE.md` is read-only throughout — never edit, reduce, back up, or
+delete it, so whatever it documented stays there alongside the new intelligence files. Existing
 intelligence files are the authority — extend them with anything `CLAUDE.md` has that they
 lack; do not overwrite them with the `CLAUDE.md` wording.
 
@@ -62,7 +65,7 @@ lack; do not overwrite them with the `CLAUDE.md` wording.
    `## Rules` sections.
 3. **Map each `CLAUDE.md` item to a target intel file.** For every item produce one of:
    - **covered** — existing intel file already says this (verify by reading the file, not by
-     filename match alone); drop from `CLAUDE.md` with no edit needed elsewhere.
+     filename match alone); no action.
    - **extend** — existing intel file is the right home but missing this rule/command; plan
      an edit that appends to it.
    - **new** — no existing intel file fits; plan a new `intelligence/<topic>.md`, or
@@ -77,7 +80,7 @@ lack; do not overwrite them with the `CLAUDE.md` wording.
    section of the existing file (respect the file's section headings; create a new section
    only if no existing one fits). For `new`, `Write` a fresh `intelligence/<topic>.md`
    following the "Shape of an intelligence file" rules in `intel:shape`.
-6. **Write `intelligence/index.md` and reduce `CLAUDE.md`** (step 6 of the full setup), with one
+6. **Write `intelligence/index.md` and `CLAUDE.local.md`** (step 6 of the full setup), with one
    index bullet per intel file referenced by trigger (both newly-created and existing files that
    already cover items, so the final index covers everything).
 7. **Report** (step 8 of the full setup), additionally calling out: which items were
@@ -91,6 +94,8 @@ After step 7 of the migration flow, stop. Do not run steps 2–8 of the full set
 Read every source of project guidance currently in the repo:
 
 - `CLAUDE.md` (root) — capture every rule, command, convention it currently documents.
+- `CLAUDE.local.md` (root) — same; route anything machine-local it documents to
+  `intelligence/local/<topic>.md` per "What belongs in `intelligence/local/`" in `intel:shape`.
 - `AGENTS.md` (root) — same.
 - `.cursor/rules/**`, `.cursorrules`, `.windsurfrules`, `.aider*` — any agent-config files.
 - `docs/`, `doc/`, `documentation/` — anything that looks like contributor guidance.
@@ -184,22 +189,58 @@ Rules:
   (e.g. `// eslint-disable-next-line`, `# type: ignore`, `# noqa`) — those are not intelligence.
 - List every comment migrated (file + line range) so the change is reviewable.
 
-## 6. Write `intelligence/index.md` and reduce `CLAUDE.md`
+## 6. Write `intelligence/index.md` and `CLAUDE.local.md`
 
 Write `intelligence/index.md` using the structure in "Shape of `intelligence/index.md`" in
 `intel:shape`. Generate one index bullet per top-level topic — a flat file targets `(<topic>.md)`, a
 hub targets `(<topic>/index.md)` — with a precise `If <trigger>` clause derived from its scope.
 
-Then rewrite `CLAUDE.md` (back it up first as `CLAUDE.md.bak` if not in git): the `# CLAUDE.md`
-heading, the canonical `## Project intelligence` stanza from "Shape of `CLAUDE.md`" in `intel:shape`,
-then every section of the old file that is not project coding guidance, verbatim and in its original
-order. Never drop user content the intelligence layer did not put there.
+Then write the pointer stanza into `CLAUDE.local.md`. Leave `CLAUDE.md` exactly as found — never
+edit, reduce, back up, or delete it.
+
+Canonical `CLAUDE.local.md` content — reproduce verbatim:
+
+```markdown
+# CLAUDE.local.md
+
+## Project intelligence
+
+This project's instructions live in an intelligence layer. **Read
+[intelligence/index.md](intelligence/index.md) first, every task**, and follow it: match its
+`If <trigger>` bullets and read every matching file in full before acting.
+
+When dispatching a subagent, include in its prompt: "Read intelligence/index.md and every matching
+intelligence file before starting."
+```
+
+Route on what is already there:
+
+- **`CLAUDE.local.md` does not exist** — `Write` it with exactly the block above.
+- **It exists and already contains the `## Project intelligence` stanza** — change nothing.
+- **It exists without the stanza** — copy the current file to `CLAUDE.local.md.bak`, then ask the
+  user with `AskUserQuestion`, question *"`CLAUDE.local.md` already exists. Where should the
+  intelligence pointer stanza go?"*, options in this order:
+  1. **Append at the end (recommended)** — keep every existing byte and add a blank line plus the
+     `## Project intelligence` stanza (without the `# CLAUDE.local.md` heading) at the bottom.
+  2. **Prepend after the heading** — rewrite as the `# CLAUDE.local.md` heading, the stanza, then
+     every existing section verbatim in its original order.
+  3. **Leave untouched** — write nothing, delete the `.bak`, and report that the user must add the
+     stanza themselves.
 
 Then create the machine-local layer — follow "Creating the local layer" in `intel:shape` (create
 `intelligence/local/`, write `intelligence/local/index.md` with the fixed preamble, ensure the
 `.gitignore` line `intelligence/local/`). Every layer has one, whether or not any machine-local
 topic was extracted. Add one bullet to `intelligence/local/index.md` per machine-local file written
 in step 5, and **no** bullet for them in `intelligence/index.md`.
+
+Then ensure the repo `.gitignore` carries these exact lines, each on its own line — create
+`.gitignore` with them when the file does not exist, append a missing line, change nothing for a
+line already present:
+
+```
+CLAUDE.local.md
+CLAUDE.local.md.bak
+```
 
 Finally stamp the ledger: append every id in the `intel:migrations` registry as `baseline` for this
 layer (see "The applied-migration ledger"). A layer born in the current shape must never have an old
@@ -216,8 +257,10 @@ duplicated rules.
 
 Tell the user: which topics were extracted, which were routed to the machine-local layer
 (`intelligence/local/`, gitignored) and why, which rules were dropped as stale (and why), which
-intelligence files were created, that `intelligence/index.md` now holds the index, and which
-`CLAUDE.md` sections were preserved below the pointer stanza. Also report on
+intelligence files were created, that `intelligence/index.md` now holds the index, what happened to
+`CLAUDE.local.md` (created / stanza appended / stanza prepended / left untouched, and whether a
+`CLAUDE.local.md.bak` was written), that `CLAUDE.md` was left unchanged, and which `.gitignore`
+lines were added. Also report on
 verbose comments: how many were promoted into intel files, how many were migrated (with file + line
 range) vs. left as is, and how many were excluded as stale or non-intelligence. Suggest next steps:
 `/intel add <topic>` or `/intel maintain`.

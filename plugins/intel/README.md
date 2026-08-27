@@ -1,6 +1,6 @@
 # intel
 
-A Claude Code plugin that manages a project **intelligence layer**: `intelligence/index.md` as a pure index of `If <trigger> → read intelligence/<topic>.md` rules, with the actual conventions, commands, and gotchas living in short, topic-focused files under `intelligence/`. `CLAUDE.md` shrinks to a fixed stanza pointing at that index, so agents load only the context a task needs instead of one giant knowledge dump.
+A Claude Code plugin that manages a project **intelligence layer**: `intelligence/index.md` as a pure index of `If <trigger> → read intelligence/<topic>.md` rules, with the actual conventions, commands, and gotchas living in short, topic-focused files under `intelligence/`. A gitignored `CLAUDE.local.md` carries a fixed stanza pointing at that index and `CLAUDE.md` is left untouched, so agents load only the context a task needs instead of one giant knowledge dump.
 
 ## Install
 
@@ -15,7 +15,7 @@ Add the [claude-plugins](https://github.com/igarcez/claude-plugins) marketplace,
 
 | Command | What it does |
 |---------|--------------|
-| `/intel setup` | Bootstrap the layer: harvest existing docs (`CLAUDE.md`, `AGENTS.md`, cursor rules, READMEs, verbose code comments), verify every rule against current code, write `intelligence/*.md` + `intelligence/index.md`, reduce `CLAUDE.md` to the pointer stanza. Also migrates a knowledge-dump `CLAUDE.md` in an already-started layer. |
+| `/intel setup` | Bootstrap the layer: harvest existing docs (`CLAUDE.md`, `AGENTS.md`, cursor rules, READMEs, verbose code comments), verify every rule against current code, write `intelligence/*.md` + `intelligence/index.md`, put the pointer stanza in a gitignored `CLAUDE.local.md`, and leave `CLAUDE.md` unchanged. Also migrates a knowledge-dump `CLAUDE.md` in an already-started layer. |
 | `/intel add <topic>` | Interview → verify → write a new `intelligence/<topic>.md` + index bullet, routing the topic to the project-shared or machine-local layer automatically (asking only when genuinely ambiguous). `add <topic>/<sub>` writes `intelligence/<topic>/<sub>.md` under the hub `intelligence/<topic>/index.md`, converting a flat topic into a hub when needed; `add local/<topic>` forces the machine-local layer. |
 | `/intel maintain` | Full audit: index ↔ files consistency, preamble drift, per-file accuracy (commands/paths/citations re-verified), split/merge of over-broad or decayed files, coverage gaps from recent git history. |
 | `/intel upgrade` | Detect and apply pending layer migrations (registry in `intel:migrations`): moving a pre-2.0 index out of `CLAUDE.md` into `intelligence/index.md`, and pre-2.0 hubs from `intelligence/<topic>.md` into `intelligence/<topic>/index.md`, re-basing the relative links each move invalidates. Applies immediately, reports what changed. |
@@ -76,7 +76,7 @@ The main model is the judge (it already holds the turn's context), so there is n
 
 ## Key conventions it enforces
 
-- **Index-only `intelligence/index.md`** — a fixed preamble plus one `If <trigger>` bullet per topic; no prose rules in the index itself. `CLAUDE.md` keeps only the pointer stanza, and any user content it already had is preserved.
+- **Index-only `intelligence/index.md`** — a fixed preamble plus one `If <trigger>` bullet per topic; no prose rules in the index itself. The pointer stanza lives in `CLAUDE.local.md` (or in `CLAUDE.md` for a layer bootstrapped before 3.0.0), and any user content that file already had is preserved.
 - **Tight topic files** — 30–120 lines, positive imperative rules stating the required behaviour, `## Commands` tables, split into `intelligence/<topic>/index.md` + sub-files when a topic grows too broad.
 - **Greppable citations** — code references anchor on symbols or exact quoted strings, never bare line numbers.
 - **Verified content only** — every command, path, and constant is checked against the current code before it is written or kept.

@@ -5,15 +5,17 @@ description: "Branch of /intel: audit the intelligence layer end-to-end (subcomm
 
 # intel maintain
 
-Audit the intelligence layer end-to-end. Do not modify code outside the intelligence layer and
-`CLAUDE.md` unless the user explicitly approves.
+Audit the intelligence layer end-to-end. Do not modify code outside the intelligence layer and the
+pointer-stanza file (`CLAUDE.local.md`, or `CLAUDE.md` in a layer that keeps the stanza there) unless
+the user explicitly approves.
 Requires the shared shapes from the `intel:shape` skill and the registry from `intel:migrations` —
 load both first if they are not already in context.
 
 ## 0. Confirm before running (token cost)
 
 `intel maintain` is **token-intensive**: it reads every `intelligence/**/*.md` file at all depths and
-the full `CLAUDE.md`, re-verifies cited paths/commands/constants against the codebase, and scans recent
+the full `CLAUDE.md` and `CLAUDE.local.md`, re-verifies cited paths/commands/constants against the
+codebase, and scans recent
 git history for coverage gaps. On a large layer this can consume a lot of context.
 
 Before any other work, warn the user and get explicit confirmation with `AskUserQuestion`:
@@ -69,9 +71,11 @@ Audit every level.
 
 Compare the `# Project intelligence index` and `## How to use this index` block in
 `intelligence/index.md` against the canonical preamble in "Shape of `intelligence/index.md`" in
-`intel:shape`, and the `## Project intelligence` stanza in `CLAUDE.md` against "Shape of `CLAUDE.md`".
-If either has drifted (wording changes, missing rules), report the diff and offer to restore the
-canonical text. Do not silently overwrite, and never touch `CLAUDE.md` content below the stanza.
+`intel:shape`, and the `## Project intelligence` stanza — in `CLAUDE.local.md` when that file carries
+it, otherwise in `CLAUDE.md` — against "Shape of the pointer-stanza file". If either has drifted
+(wording changes, missing rules), report the diff and offer to restore the canonical text. Do not
+silently overwrite, and never touch content below the stanza. When neither file carries the stanza,
+report it and offer to write `CLAUDE.local.md` per step 6 of `intel:setup`.
 
 Check the local layer's preamble the same way against "Shape of `intelligence/local/index.md`" in
 `intel:shape`, and report its drift under the local section of the report.

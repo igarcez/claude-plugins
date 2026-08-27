@@ -1,6 +1,6 @@
 ---
 name: shape
-description: "Shared reference for /intel — shape of an intelligence file, hub/sub-index splitting, code-citation rules, canonical intelligence/index.md and CLAUDE.md shapes. Internal: loaded by the intel command before any branch; not a standalone task."
+description: "Shared reference for /intel — shape of an intelligence file, hub/sub-index splitting, code-citation rules, canonical intelligence/index.md and pointer-stanza file shapes. Internal: loaded by the intel command before any branch; not a standalone task."
 ---
 
 # intel — shared shapes
@@ -278,13 +278,19 @@ The preamble (`# Project intelligence index` through end of `## How to use this 
 Only the `## Index` bullets change between projects. When rewriting `intelligence/index.md`, preserve
 the preamble verbatim.
 
-## Shape of `CLAUDE.md`
+## Shape of the pointer-stanza file
 
-`CLAUDE.md` is **not** the index. It carries one fixed stanza pointing at the index, followed by
-whatever the user keeps there that the intelligence layer did not put there:
+Neither `CLAUDE.md` nor `CLAUDE.local.md` is the index. One of them carries a single fixed stanza
+pointing at the index, followed by whatever the user keeps there that the intelligence layer did not
+put there:
+
+- **Layer bootstrapped by `intel:setup` 3.0.0 or later** — the stanza lives in a gitignored
+  `CLAUDE.local.md`, and `CLAUDE.md` stays exactly as the user wrote it.
+- **Layer bootstrapped earlier, or migrated by `M001`** — the stanza lives in `CLAUDE.md` and stays
+  there. Both placements count as index shape.
 
 ```markdown
-# CLAUDE.md
+# CLAUDE.local.md
 
 ## Project intelligence
 
@@ -296,6 +302,7 @@ When dispatching a subagent, include in its prompt: "Read intelligence/index.md 
 intelligence file before starting."
 ```
 
-The `# CLAUDE.md` heading and the whole `## Project intelligence` stanza are **fixed** — reproduce
-them verbatim. Everything below the stanza is user content: preserve it verbatim, in its original
-order, and never delete a section the intelligence layer does not own.
+The heading (`# CLAUDE.local.md`, or `# CLAUDE.md` in a layer that keeps the stanza there) and the
+whole `## Project intelligence` stanza are **fixed** — reproduce them verbatim. Everything below the
+stanza is user content: preserve it verbatim, in its original order, and never delete a section the
+intelligence layer does not own.
