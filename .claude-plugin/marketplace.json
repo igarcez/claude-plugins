@@ -25,6 +25,11 @@
       "name": "pr-review",
       "source": "./plugins/pr-review",
       "description": "AI pull-request reviews — review a GitHub PR (or your own current branch via /self-review), then plan the fixes, keep a local report, or push inline review comments (beta)"
+    },
+    {
+      "name": "no-comments",
+      "source": "./plugins/no-comments",
+      "description": "Deny code comments at write time — Claude rewrites the code with descriptive names and small named functions so the comment is redundant"
     }
   ]
 }

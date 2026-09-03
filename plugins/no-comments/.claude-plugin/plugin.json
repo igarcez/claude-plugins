@@ -1,0 +1,13 @@
+{
+  "name": "no-comments",
+  "description": "Deny code comments at write time — Claude rewrites the code with descriptive names and small named functions so the comment is redundant",
+  "version": "1.0.0",
+  "author": {
+    "name": "Ian Garcez",
+    "url": "https://github.com/igarcez"
+  },
+  "homepage": "https://github.com/igarcez/claude-plugins",
+  "repository": "https://github.com/igarcez/claude-plugins",
+  "license": "MIT",
+  "keywords": ["comments", "code-style", "refactoring", "hooks", "clean-code"]
+}

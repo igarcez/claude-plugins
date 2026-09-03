@@ -110,3 +110,21 @@ rule wrong (fix or remove)? Claude answers in one line or stays silent.
 - `CLAUDE_INTEL_CAPTURE=0` disables it without touching the auto-loading hook.
 - No-ops instantly when `jq` is missing or the cwd root has neither `intelligence/index.md` nor
   `intelligence/local/index.md`.
+
+## Reference: no-comments-guard.sh (no-comments plugin's PreToolUse hook)
+
+Before every `Write` / `Edit` whose `tool_input.file_path` ends in `.ts .tsx .js .jsx .mjs .cjs
+.php .go`, or matches `plans/*.plan.md`, it scans the *incoming* content — `content` for `Write`,
+`new_string` for `Edit` — and denies the tool call when it adds a comment.
+
+- Denial envelope is the PreToolUse shape:
+  `{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}`,
+  exit 0. Allowing is expressed by printing nothing and exiting 0, never by a decision field.
+- `plans/*.plan.md` is scanned through an `awk` fence extractor: only blocks tagged `ts`, `tsx`,
+  `typescript`, `js`, `jsx`, `javascript`, `php`, `go` reach the detector.
+- False positives are cut by stripping escapes and quoted spans (`sed`) before matching, so `//`
+  inside a URL or a regex literal does not deny.
+- `#` is a comment marker only for `.php` and for mixed-language plan fences; shebangs are
+  exempted separately.
+- `CLAUDE_NO_COMMENTS=0` disables it. Missing `jq`, empty stdin, unmatched extension, or empty
+  content all exit 0 silently.
