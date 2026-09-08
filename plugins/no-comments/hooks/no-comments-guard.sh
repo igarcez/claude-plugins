@@ -2,7 +2,8 @@
 # PreToolUse hook (Write|Edit). Fires on every Write/Edit whose target is a
 # TypeScript/JavaScript/PHP/Go source file, or a plans/*.plan.md file (code fences only).
 # Denies the call when the incoming content adds a comment that is not a machine-read
-# pragma or a license header. CLAUDE_NO_COMMENTS=0 disables it.
+# pragma, a license header, or — in a test file — a bare Arrange/Act/Assert block marker.
+# CLAUDE_NO_COMMENTS=0 disables it.
 # Degrades silently (allow) on any missing dependency or unparseable input.
 
 set -u
@@ -35,6 +36,13 @@ case "$file_path" in
   *.php) mode="code"; language="php" ;;
   */plans/*.plan.md|plans/*.plan.md) mode="fences" ;;
   *) exit 0 ;;
+esac
+
+is_test=0
+case "$file_path" in
+  *.test.*|*.spec.*|*_test.go|*Test.php|*_test.php) is_test=1 ;;
+  */tests/*|*/test/*|*/__tests__/*|*/spec/*) is_test=1 ;;
+  tests/*|test/*|__tests__/*|spec/*) is_test=1 ;;
 esac
 
 if [ "$mode" = "fences" ]; then
@@ -71,11 +79,18 @@ fi
 
 allow_pattern='(//|/\*|#)[[:space:]]*(eslint|prettier-ignore|biome-ignore|@ts-ignore|@ts-expect-error|@ts-nocheck|@phpstan-|@psalm-|phpcs:|@codeCoverageIgnore|go:|Code generated|SPDX-License-Identifier|Copyright|nolint:)'
 
+aaa_marker_pattern='^[0-9]+:[[:space:]]*(//|#)[[:space:]]*(Arrange|Act|Assert):?[[:space:]]*$'
+
 offenders=$(printf '%s\n' "$stripped" \
   | grep -nE "$comment_pattern" \
   | grep -vE "$allow_pattern" \
-  | grep -vE '^[0-9]+:#!' \
-  | head -5)
+  | grep -vE '^[0-9]+:#!')
+
+if [ "$is_test" = "1" ] && [ -n "$offenders" ]; then
+  offenders=$(printf '%s\n' "$offenders" | grep -vE "$aaa_marker_pattern")
+fi
+
+offenders=$(printf '%s\n' "$offenders" | head -5)
 
 [ -n "$offenders" ] || exit 0
 
@@ -87,7 +102,7 @@ reason=$(printf '%s\n' \
   "" \
   "Rewrite the code so each comment is redundant: name the value, extract the block into a small well-named function, or replace the explanation with an intent-revealing identifier. Load the skill \`no-comments:style\` for the rewrite playbook, then resend the Write/Edit without comments." \
   "" \
-  "Machine-read pragmas (eslint-*, @ts-*, @phpstan-*, phpcs:, //go:, generated-code markers, shebangs) and license headers are allowed and were not flagged.")
+  "Machine-read pragmas (eslint-*, @ts-*, @phpstan-*, phpcs:, //go:, generated-code markers, shebangs), license headers, and bare Arrange/Act/Assert markers in test files (exact capitalization, marker only) are allowed and were not flagged.")
 
 jq -n --arg r "$reason" '{
   hookSpecificOutput: {

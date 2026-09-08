@@ -35,3 +35,4 @@ Index of project instructions. Read the referenced file when its trigger matches
 - If authoring or editing a slash command (`commands/*.md`, frontmatter, `$ARGUMENTS`, dispatcher routing to skills) → read [intelligence/commands.md](commands.md)
 - If authoring or editing a skill (`skills/<name>/SKILL.md`, frontmatter, internal-skill convention, `plugin:skill` naming) → read [intelligence/skills.md](skills.md)
 - If authoring or editing a hook (`hooks/hooks.json`, hook shell scripts, `${CLAUDE_PLUGIN_ROOT}`, portability, fail-safe/recursion) → read [intelligence/hooks.md](hooks.md)
+- If changing how one plugin reuses another's skills (prime delegating to `intel:add` / `intel:setup`, cross-plugin lockstep like the no-comments AAA exemption) → read [intelligence/cross-plugin.md](cross-plugin.md)

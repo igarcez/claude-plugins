@@ -30,6 +30,11 @@
       "name": "no-comments",
       "source": "./plugins/no-comments",
       "description": "Deny code comments at write time — Claude rewrites the code with descriptive names and small named functions so the comment is redundant"
+    },
+    {
+      "name": "prime",
+      "source": "./plugins/prime",
+      "description": "Prime a repository for quality software engineering — installs direction-focused intelligence topics for AAA tests, Clean Code, Clean Architecture, comment-free code, the boy scout rule, and the detected stack"
     }
   ]
 }

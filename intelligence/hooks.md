@@ -115,7 +115,8 @@ rule wrong (fix or remove)? Claude answers in one line or stays silent.
 
 Before every `Write` / `Edit` whose `tool_input.file_path` ends in `.ts .tsx .js .jsx .mjs .cjs
 .php .go`, or matches `plans/*.plan.md`, it scans the *incoming* content — `content` for `Write`,
-`new_string` for `Edit` — and denies the tool call when it adds a comment.
+`new_string` for `Edit` — and denies the tool call when it adds a comment. In a test file it
+allows bare Arrange/Act/Assert block markers.
 
 - Denial envelope is the PreToolUse shape:
   `{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}`,
@@ -126,5 +127,11 @@ Before every `Write` / `Edit` whose `tool_input.file_path` ends in `.ts .tsx .js
   inside a URL or a regex literal does not deny.
 - `#` is a comment marker only for `.php` and for mixed-language plan fences; shebangs are
   exempted separately.
+- Test paths (`*.test.*`, `*.spec.*`, `*_test.go`, `*Test.php`, `*_test.php`, or a `tests/`,
+  `test/`, `__tests__/`, `spec/` path segment) set `is_test=1`, which filters offenders through
+  `aaa_marker_pattern` — a comment whose whole content is `Arrange`, `Act`, or `Assert` with an
+  optional trailing colon, exact capitalization. The filter runs as a separate `grep -vE` guarded
+  by `[ -n "$offenders" ]`, never as an empty alternative inside `allow_pattern`, because
+  `grep -vE ''` would drop every line and allow everything.
 - `CLAUDE_NO_COMMENTS=0` disables it. Missing `jq`, empty stdin, unmatched extension, or empty
   content all exit 0 silently.

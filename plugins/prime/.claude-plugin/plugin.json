@@ -1,0 +1,13 @@
+{
+  "name": "prime",
+  "description": "Prime a repository for quality software engineering — installs direction-focused intelligence topics for Arrange–Act–Assert tests, Clean Code, Clean Architecture, comment-free code, the boy scout rule, and the detected stack",
+  "version": "1.0.0",
+  "author": {
+    "name": "Ian Garcez",
+    "url": "https://github.com/igarcez"
+  },
+  "homepage": "https://github.com/igarcez/claude-plugins",
+  "repository": "https://github.com/igarcez/claude-plugins",
+  "license": "MIT",
+  "keywords": ["intelligence", "clean-code", "clean-architecture", "tests", "code-style", "onboarding"]
+}

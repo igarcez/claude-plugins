@@ -18,7 +18,8 @@ comment is redundant.
 ### PreToolUse hook — `no-comments-guard.sh`
 
 Fires before every `Write` and `Edit` whose target is a TypeScript, JavaScript, PHP, or Go source
-file (`.ts .tsx .js .jsx .mjs .cjs .php .go`), or a `plans/*.plan.md` file. It:
+file (`.ts .tsx .js .jsx .mjs .cjs .php .go`), or a `plans/*.plan.md` file. In a test file it
+allows bare `Arrange` / `Act` / `Assert` block markers, and nothing else. It:
 
 1. Exits immediately when `CLAUDE_NO_COMMENTS=0`, when `jq` is missing, or when the target
    extension is not one of the above.
@@ -33,10 +34,18 @@ file (`.ts .tsx .js .jsx .mjs .cjs .php .go`), or a `plans/*.plan.md` file. It:
    `@ts-expect-error`, `@ts-nocheck`, `@phpstan-*`, `@psalm-*`, `phpcs:*`, `@codeCoverageIgnore`,
    `//go:*`, `//nolint:*`, `// Code generated ...`), a shebang, or a license header
    (`SPDX-License-Identifier`, `Copyright`).
-6. Returns the offending lines and points at the `no-comments:style` skill, so the agent rewrites
+6. In a test file — path matching `*.test.*`, `*.spec.*`, `*_test.go`, `*Test.php`, `*_test.php`,
+   or carrying a `tests/`, `test/`, `__tests__/`, or `spec/` path segment — also allows a comment
+   whose entire content is `Arrange`, `Act`, or `Assert`, with an optional trailing colon. The
+   capitalization is exact, and the marker stands alone: `// arrange` and
+   `// Arrange the paid user` are both denied, in test files too.
+7. Returns the offending lines and points at the `no-comments:style` skill, so the agent rewrites
    the code rather than deleting the comment.
 
 Doc blocks — JSDoc, PHPDoc, docstrings — count as comments and are denied.
+
+The Arrange/Act/Assert exemption exists for the `tests` topic written by the
+[prime](../prime/) plugin, which shapes every test as three marked blocks.
 
 ### Skill — `no-comments:style`
 

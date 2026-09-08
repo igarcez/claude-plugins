@@ -15,9 +15,10 @@ add nothing, then drop the comment.
 
 Allowed, and only these: machine-read pragmas (`eslint-*`, `prettier-ignore`, `biome-ignore`,
 `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck`, `@phpstan-*`, `@psalm-*`, `phpcs:*`,
-`//go:*`, `// Code generated ... DO NOT EDIT.`, `//nolint:*`), shebangs, and license headers
-(`SPDX-License-Identifier`, `Copyright`). Doc blocks — JSDoc, PHPDoc, docstrings — are comments and
-are not allowed.
+`//go:*`, `// Code generated ... DO NOT EDIT.`, `//nolint:*`), shebangs, license headers
+(`SPDX-License-Identifier`, `Copyright`), and — in a test file — a bare `// Arrange`, `// Act`, or
+`// Assert` block marker, exactly capitalized and carrying no other text. Doc blocks — JSDoc,
+PHPDoc, docstrings — are comments and are not allowed.
 
 ## Comment to refactor
 
