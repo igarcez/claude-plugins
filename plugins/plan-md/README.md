@@ -19,7 +19,7 @@ Add the [claude-plugins](https://github.com/igarcez/claude-plugins) marketplace,
 | `/plan-md setup` | Create `plans/` + `plans/done/` and settle whether plans are committed or gitignored |
 | `/plan-md list` | List active and completed plans with ids and goals |
 | `/plan-md review <id>` | Address `claude:` feedback comments left in a plan |
-| `/plan-md execute <id>` | Execute a plan step by step, tracking plan gaps |
+| `/plan-md execute <id>` | Execute a plan step by step, tracking plan gaps — delegated to a fresh subagent when the session already carries context |
 
 Plans are referenced by an id of two BIP39 words (e.g. `river-tiger`) or by full name. Plans created before v1.2.0 keep their legacy 3-character id (e.g. `a3f`) and still resolve. Completed plans move to `plans/done/`.
 
@@ -40,7 +40,7 @@ skills/
   new/scripts/new-plan-id.sh  id generator — two BIP39 words, wordlist embedded
   list/SKILL.md        list active + completed plans
   review/SKILL.md      address claude: feedback comments
-  execute/SKILL.md     execute a plan step by step, track plan gaps
+  execute/SKILL.md     execute a plan step by step (inline or in a subagent), track plan gaps
   migrate/SKILL.md     legacy DONE-marker migration (shared by list/review/execute/setup)
   php/SKILL.md         stack rules, loaded as skill plan-md:php
   typescript/SKILL.md  stack rules, loaded as skill plan-md:typescript

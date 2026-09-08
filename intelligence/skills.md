@@ -26,6 +26,9 @@ description: "<when to use it>"
 - **Lockstep with the body.** When a skill's scope changes, update its frontmatter `description` and
   any branch list in its opening lines in the same edit — both name what the skill covers, and the
   dispatcher and the skill picker read the `description`.
+- **Cross-references inside the body.** Renaming a numbered step or a bolded step heading leaves
+  other steps pointing at the old name. Grep the skill body for the old wording and update every
+  reference in the same edit — `plan-md:execute` step 2 guards against proceeding to step 3 by name.
 
 ## Bundled scripts
 

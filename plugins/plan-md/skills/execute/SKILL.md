@@ -1,6 +1,6 @@
 ---
 name: execute
-description: "Branch of /plan-md: execute a plan step by step, tracking plan gaps (subcommand execute). Internal: loaded by the plan-md command; not a standalone task."
+description: "Branch of /plan-md: execute a plan step by step — inline at a cold start, in a fresh subagent when the session carries prior context — tracking plan gaps (subcommand execute). Internal: loaded by the plan-md command; not a standalone task."
 ---
 
 # plan-md execute
@@ -19,22 +19,21 @@ If the argument is empty (user typed `/plan-md execute` with no plan id):
 Once the target plan is identified:
 
 1. Read the `plans/<name>.plan.md` file.
-2. **Open-comment guard.** Search the plan for any unaddressed `claude:` comments (same detection as `review` step 3 — lines containing `claude:`, e.g. `claude: this step should also handle edge case X`). If one or more are found, **STOP — do not execute, do not proceed to context evaluation:**
+2. **Open-comment guard.** Search the plan for any unaddressed `claude:` comments (same detection as `review` step 3 — lines containing `claude:`, e.g. `claude: this step should also handle edge case X`). If one or more are found, **STOP — do not execute, do not proceed to execution routing:**
    - Show the user every offending line with its location (which `### Step` heading it falls under, and the line text).
    - Explain that these are unaddressed feedback comments — executing now would run a plan the user may still be reviewing.
    - Use `AskUserQuestion` to ask whether they meant to review first. Offer: **Review first (Recommended)** — stop, then run `/plan-md review <name>` to address the comments; and **Execute anyway** — ignore the open comments and proceed.
    - If they choose *Review first*, tell them to run `/plan-md review <name>` and stop here. If they choose *Execute anyway*, continue to the next step.
-3. **Context evaluation:** Silently assess how much context is *already accumulated* in the window right now — roughly the number of prior turns and whether they carry planning discussion, code reads, or file edits. `/clear` and `/compact` only help by reclaiming context that is **already** sitting in the window before a long execution; they do nothing at a cold start, and they cannot reduce the tokens the execution itself will spend. So judge by accumulated context, **never** by plan size — a many-step plan predicts *future* spend, which clearing beforehand cannot lower. Pick one of three outcomes:
-   - **Continue** — the session is at or near a cold start (roughly fewer than 5 prior turns), or the accumulated context is otherwise small. This is the common case when the user runs `/plan-md execute` directly, and it holds **regardless of how many steps the plan has**. Do not mention context at all; proceed directly to the next step.
-   - **`clear`** — there are many prior turns (roughly 5+) of mostly planning discussion or other material the executor does not need, and no code reads/edits worth keeping.
-   - **`compact`** — there are many prior turns (roughly 5+) that include code reads or file edits the executor may still need.
-
-   For `clear` or `compact`, do not output the bare recommendation word — it is too easy to miss. Instead surface it as a single **bold question** naming the matching slash command, then wait for the user's answer:
-   - for `clear`: **Run `/clear` first to save tokens before proceeding?**
-   - for `compact`: **Run `/compact` first to save tokens before proceeding?**
-
-   Output nothing else — no token estimates, no justification, no other surrounding prose. If they clear or compact, remind them to re-run `/plan-md execute <name>` afterward. If they decline, continue immediately.
-4. If a `CLAUDE.md` file exists in the working directory, read it and follow its guidelines throughout execution.
+3. **Execution routing.** Silently assess whether the context window already carries prior context — any prior turns of planning discussion, code reads, or file edits. Do not judge by plan size; a many-step plan predicts *future* spend, which routing cannot lower.
+   - **Cold start** (the session was just cleared, or holds no prior context beyond this command): execute steps 4–9 inline yourself. Say nothing about context or routing.
+   - **Any accumulated prior context:** delegate steps 4–9 to a fresh subagent automatically — no recommendation, no permission question, no token estimates. Call the `Agent` tool once with `subagent_type: "general-purpose"`, `description: "execute plan <ID>"`, and a prompt that carries everything the subagent needs, since it has none of this session's context:
+     - the absolute path of the plan file, and the instruction to read it in full first;
+     - the instruction to read `CLAUDE.md` in the working directory (if present) and follow it throughout execution;
+     - the instruction *"Read intelligence/index.md and every matching intelligence file before starting"* (harmless when the repo has no intelligence layer);
+     - steps 4–9 of this skill verbatim as its task: execute every plan step sequentially, mark each finished step done in the plan file (`### Step 1: ~~title~~ Done`), track plan gaps, continue past a blocked step where possible;
+     - the instruction to return a final report containing the per-step outcome and the full plan-gap list (what the plan said or omitted, what was actually true, the one-line lesson).
+     When the subagent finishes, relay its summary and adopt its reported plan-gap list as the step 7 list, then continue with steps 10 and 11 yourself in this session. Steps 10 and 11 stay in this session in both routes — they need `AskUserQuestion`.
+4. Steps 4–9 run in whichever place step 3 chose — inline in this session, or inside the delegated subagent. If a `CLAUDE.md` file exists in the working directory, read it and follow its guidelines throughout execution.
 5. Execute each step in the plan sequentially, implementing all the code changes described.
 6. After completing each step, update the plan file by marking the step as done (prefix the step title with a checkmark, e.g., `### Step 1: ~~title~~ Done`).
 7. **Track plan gaps.** A *plan gap* is anything the plan got wrong or left out that you only discovered while executing — a step that was incorrect or incomplete, a missing prerequisite/setup step, a false assumption, an unanticipated error path or edge case, a wrong path/identifier/command. Whenever you hit one, record it in a running list with three things: what the plan said (or omitted), what was actually true, and the one-line lesson that would have prevented it.
