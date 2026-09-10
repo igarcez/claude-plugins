@@ -5,6 +5,9 @@ description: "Branch of /pr-review: parse an edited local report and submit its 
 
 # pr-review — push a report to the PR
 
+The review body and every inline comment posted here are public. Load the skill `prose:prose` and
+follow it when composing the body; continue without it when it cannot be loaded.
+
 ## 1. Locate and parse the report
 
 Resolve the PR reference argument to a number (strip `#`; from a URL take the trailing number). Read `reviews/pr-<number>.review.md`.

@@ -19,6 +19,7 @@ Ian Garcez's Claude Code plugin marketplace.
 | [pr-review](plugins/pr-review/) | AI pull-request reviews (beta) — `/pr-review <pr>` reviews a GitHub PR for correctness, security, and performance findings, then plans the fixes via plan-md, keeps a local report, or pushes them as inline review comments with `/pr-review push <pr>`. |
 | [no-comments](plugins/no-comments/) | Comment-free code enforcement — a PreToolUse hook denies any `Write`/`Edit` that adds a non-pragma comment to TypeScript, JavaScript, PHP, or Go (bare `Arrange`/`Act`/`Assert` markers in test files excepted), and the `no-comments:style` skill shows how to rewrite the code so the comment is redundant. |
 | [prime](plugins/prime/) | Quality-engineering priming — `/prime` detects the stack and installs direction-focused intelligence topics (AAA tests, Clean Code, Clean Architecture, comment-free code, the boy scout rule, one per language and framework) by delegating every write to `intel:add`. |
+| [prose](plugins/prose/) | Writing rules for all output, chat replies included — `/prose` loads the rules (or rewrites a passed file or snippet): the point first, only what is in place, the change named in the imperative, plain language per ISO 24495-1. A UserPromptSubmit hook injects the digest on every prompt. |
 
 The two pair well: `/plan-md execute` captures recurring plan gaps into the intelligence layer via `/intel`.
 

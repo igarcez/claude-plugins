@@ -1,0 +1,13 @@
+{
+  "name": "prose",
+  "description": "Writing rules for all output — chat replies, review comments, docs, changelogs, commit and PR bodies: lead with the point, state only what is in place, plain language per ISO 24495-1",
+  "version": "1.0.0",
+  "author": {
+    "name": "Ian Garcez",
+    "url": "https://github.com/igarcez"
+  },
+  "homepage": "https://github.com/igarcez/claude-plugins",
+  "repository": "https://github.com/igarcez/claude-plugins",
+  "license": "MIT",
+  "keywords": ["writing", "prose", "plain-language", "documentation", "code-review", "changelog"]
+}

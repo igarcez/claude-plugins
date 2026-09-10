@@ -23,6 +23,9 @@ Installing the plugin registers the hooks — no user `settings.json` edits need
 
 ## Authoring rules (command hooks)
 
+- **Write the script comment-free.** The shebang is the only `#` line. State the trigger
+  condition, every env switch, and the fail-safe behaviour in `plugins/<plugin>/README.md` and in
+  the matching `## Reference: <script>` section of this file.
 - **Fail-safe: degrade.** On any missing dependency or failure, exit cleanly with
   reduced output. `intel-haiku.sh` degrades in order: no `jq` / `cwd` → `exit 0` (silent); no
   `intelligence/index.md` → legacy-layout warning if a pre-2.0 layer is detected, else `exit 0`
@@ -52,10 +55,10 @@ Installing the plugin registers the hooks — no user `settings.json` edits need
   subagent turns are meant to fire too.
 
 - **Lockstep when a hook's trigger condition or env flag changes.** The condition ("fires in a project
-  that has X") and every env switch are stated in three places: the comment at the top of the hook
-  script, the hook section of `plugins/<plugin>/README.md` (**both** its opening sentence and its
-  numbered list — patching only the list leaves the section contradicting itself), and the matching
-  `## Reference: <script>` section in `intelligence/hooks.md`. Update all three in the same change.
+  that has X") and every env switch are stated in two places: the hook section of
+  `plugins/<plugin>/README.md` (**both** its opening sentence and its numbered list — patching only
+  the list leaves the section contradicting itself), and the matching `## Reference: <script>`
+  section in `intelligence/hooks.md`. Update both in the same change.
 
 ## Portability
 
@@ -106,6 +109,8 @@ rule wrong (fix or remove)? Claude answers in one line or stays silent.
   hook is instant and needs no `"timeout"` override.
 - Fires at most once per user turn: marker `${TMPDIR:-/tmp}/intel-capture-<session_id>-<prompt_id>`,
   written before emitting, pruned after 7 days.
+- Both ids come from the harness. A value that is not filename-safe is refused, never sanitized —
+  the hook skips the marker and stays silent instead of writing a made-up path.
 - Skips subagents (`.agent_id` non-empty) and continuations (`.stop_hook_active`).
 - `CLAUDE_INTEL_CAPTURE=0` disables it without touching the auto-loading hook.
 - No-ops instantly when `jq` is missing or the cwd root has neither `intelligence/index.md` nor
@@ -135,3 +140,17 @@ allows bare Arrange/Act/Assert block markers.
   `grep -vE ''` would drop every line and allow everything.
 - `CLAUDE_NO_COMMENTS=0` disables it. Missing `jq`, empty stdin, unmatched extension, or empty
   content all exit 0 silently.
+
+## Reference: prose-style.sh (prose plugin's UserPromptSubmit hook)
+
+On every prompt it injects a digest of the `prose:prose` rules plus a pointer to the skill, so the
+turn's chat reply and every piece of text the turn writes follow one style.
+
+- Emits `{hookSpecificOutput:{hookEventName:"UserPromptSubmit",additionalContext:$c}}`, exit 0.
+  Verified on Claude Code 2.1.266: the context reaches the model and the prompt still runs.
+- Fires on every prompt with no target filtering: the rules cover all output, so there is nothing
+  to match on. The event is once per prompt, so the hook needs no marker file.
+- No child model call and no disk reads — instant, and no `"timeout"` override.
+- Drains stdin before doing anything, so an early exit never leaves the harness writing to a
+  closed pipe.
+- `CLAUDE_PROSE=0` disables it. Missing `jq` exits 0 silently.

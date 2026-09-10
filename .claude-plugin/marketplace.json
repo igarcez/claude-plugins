@@ -35,6 +35,11 @@
       "name": "prime",
       "source": "./plugins/prime",
       "description": "Prime a repository for quality software engineering — installs direction-focused intelligence topics for AAA tests, Clean Code, Clean Architecture, comment-free code, the boy scout rule, and the detected stack"
+    },
+    {
+      "name": "prose",
+      "source": "./plugins/prose",
+      "description": "Writing rules for all output — chat replies, review comments, docs, changelogs, commit and PR bodies: lead with the point, state only what is in place, plain language per ISO 24495-1"
     }
   ]
 }

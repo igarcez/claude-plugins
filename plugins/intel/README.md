@@ -11,6 +11,10 @@ Add the [claude-plugins](https://github.com/igarcez/claude-plugins) marketplace,
 /plugin install intel@igarcez
 ```
 
+The [prose](../prose/) plugin supplies the writing rules: `intel:add` loads `prose:prose` before
+writing an intelligence file, and falls through to writing it without those rules when prose is
+not installed.
+
 ## Usage
 
 | Command | What it does |

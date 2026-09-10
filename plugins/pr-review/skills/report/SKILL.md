@@ -5,6 +5,10 @@ description: "Branch of /pr-review: write the structured local review report and
 
 # pr-review — write the local report
 
+Every `**Issue:**` and `**Suggestion:**` written here reaches the PR author once the report is
+pushed. Load the skill `prose:prose` and follow it when wording them; continue without it when it
+cannot be loaded.
+
 ## 1. Write the report file
 
 Get today's date with `date +%Y-%m-%d`. Write `reviews/pr-<number>.review.md` (git-only fallback: `reviews/<source-branch with / replaced by ->.review.md`), overwriting any previous report for the same PR, in exactly this structure — one `##` section per finding, ordered critical → major → minor:

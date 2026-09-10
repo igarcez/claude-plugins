@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# intel-haiku.sh — intel plugin's UserPromptSubmit hook. See intelligence/hooks.md.
 
 case "${CLAUDE_INTEL_SELECTOR:-}" in 1) exit 0 ;; esac
 
@@ -12,16 +11,11 @@ prompt="$(printf '%s' "$input" | jq -r '.prompt // empty')"
 
 emit() { jq -n --arg c "$1" '{hookSpecificOutput:{hookEventName:"UserPromptSubmit",additionalContext:$c}}'; }
 
-# Two indexes: the tracked intelligence/index.md and the gitignored, machine-local
-# intelligence/local/index.md. Both are injected on every prompt; either one alone is enough to
-# run. CLAUDE_INTEL_LOCAL=0 turns the local layer off without touching the tracked one.
 index_file="$cwd/intelligence/index.md"
 local_index_file="$cwd/intelligence/local/index.md"
 case "${CLAUDE_INTEL_LOCAL:-1}" in 0) local_index_file="" ;; esac
 if [ -n "$local_index_file" ] && [ ! -f "$local_index_file" ]; then local_index_file=""; fi
 
-# A tracked layer without intelligence/index.md is on the legacy layout (index still inside
-# CLAUDE.md): warn instead of loading it, and stay silent in projects with no layer at all.
 warn=""
 if [ ! -f "$index_file" ]; then
   legacy=0
@@ -51,7 +45,6 @@ fi
 
 if ! command -v claude >/dev/null 2>&1 || [ -z "$prompt" ]; then emit "$ctx"; exit 0; fi
 
-# Resolve plan references in the prompt as evidence (see intelligence/hooks.md).
 evidence=""
 seen_plan=" "
 cands="$(printf '%s' "$prompt" | tr '[:upper:]' '[:lower:]' | grep -owE '[a-z]{3,8}-[a-z]{3,8}' | head -n 4)
@@ -66,9 +59,6 @@ for tok in $cands; do
   done
 done
 
-# Expand hubs so nested sub-files can be selected directly (see intelligence/hooks.md). Every hub is
-# an intelligence/<path>/index.md; -mindepth 2 skips the root index, already in $ctx. The
-# machine-local root index is already in $ctx too — skip it, but keep expanding hubs nested inside it.
 hubs=""
 if [ -d "$cwd/intelligence" ]; then
   while IFS= read -r hubfile; do
@@ -108,9 +98,6 @@ ${evidence:-none}
 
 Output the relevant intelligence file paths now, one per line:"
 
-# Bound the selector call with a watchdog instead of `timeout` (absent on stock macOS); an over-bound
-# call is killed and the hook degrades to index-only instead of being killed whole by the harness's
-# hook timeout. --strict-mcp-config: the selector needs no tools, so skip MCP server startup.
 bound="${CLAUDE_INTEL_SELECTOR_TIMEOUT:-40}"
 sel_file="$(mktemp "${TMPDIR:-/tmp}/intel-selector.XXXXXX")" || { emit "$ctx"; exit 0; }
 CLAUDE_INTEL_SELECTOR=1 CLAUDE_CODE_DISABLE_BUNDLED_SKILLS=1 \

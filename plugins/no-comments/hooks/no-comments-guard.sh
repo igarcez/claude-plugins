@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
-# PreToolUse hook (Write|Edit). Fires on every Write/Edit whose target is a
-# TypeScript/JavaScript/PHP/Go source file, or a plans/*.plan.md file (code fences only).
-# Denies the call when the incoming content adds a comment that is not a machine-read
-# pragma, a license header, or — in a test file — a bare Arrange/Act/Assert block marker.
-# CLAUDE_NO_COMMENTS=0 disables it.
-# Degrades silently (allow) on any missing dependency or unparseable input.
 
 set -u
 

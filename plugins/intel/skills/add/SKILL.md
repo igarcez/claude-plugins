@@ -8,6 +8,9 @@ description: "Branch of /intel: add a new intelligence topic or sub-topic (subco
 Add a new `intelligence/<topic>.md` (or hub sub-file) plus its index bullet.
 Requires the shared shapes from the `intel:shape` skill — load it first if it is not already in context.
 
+Every intelligence file written here is read by the rest of the team. Load the skill `prose:prose`
+and follow it when writing the file's text; continue without it when it cannot be loaded.
+
 Parse the topic name from the argument (e.g. `add releases` → topic `releases`). The topic must be
 kebab-case. If no topic is given, ask the user for one via `AskUserQuestion` (offer 2–4 likely topics
 inferred from recent conversation, plus Other).

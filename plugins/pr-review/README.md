@@ -2,6 +2,10 @@
 
 AI pull-request reviews for GitHub. **Beta (0.x).**
 
+The [prose](../prose/) plugin supplies the writing rules: `pr-review:report` and `pr-review:push`
+load `prose:prose` before wording a finding or a review body, and continue without those rules
+when prose is not installed.
+
 ## Usage
 
 ```
